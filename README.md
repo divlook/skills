@@ -56,9 +56,24 @@ Copy `skills/api-radar/` into your agent's skills directory:
 | Claude Code | `.claude/skills/api-radar/` | `~/.claude/skills/api-radar/` |
 | Cursor | `.agents/skills/api-radar/` | `~/.cursor/skills/api-radar/` |
 
+## Requirements
+
+- [GitHub CLI (`gh`)](https://cli.github.com/) — required for PR/commit/branch analysis
+- GitHub CLI authentication (`gh auth login`) — required for private repositories and PR/commit/branch analysis
+
+Standard path/keyword/description searches use the agent's built-in file search tools and do not require `gh`.
+
 ## Usage
 
-Prompt your agent with `[repo] [query]`:
+### Quick Start
+
+```
+/api-radar example-owner/example-repo /v1/users
+```
+
+Provide a **repository** and a **query**, and the skill returns an Endpoint Reference Card.
+
+### Query types
 
 | Type | Example | When to use |
 |------|---------|-------------|
@@ -121,8 +136,11 @@ payments PR#42
 ```
 
 The file is located at:
-- **npx install**: `<agent-skills-dir>/api-radar/references/repo-aliases.md`
-- **Manual install**: wherever you placed the skill
+
+| Agent | Project path |
+|-------|-------------|
+| Claude Code | `.claude/skills/api-radar/references/repo-aliases.md` |
+| OpenCode, Cursor | `.agents/skills/api-radar/references/repo-aliases.md` |
 
 ## Supported Frameworks
 
@@ -133,13 +151,6 @@ The file is located at:
 | Java | Spring (RestController) |
 
 Detection is best-effort. If the framework cannot be confirmed, analysis continues with the same output format and uncertain items are noted in the `Uncertainties` section.
-
-## Requirements
-
-- [GitHub CLI (`gh`)](https://cli.github.com/) — required for PR/commit/branch analysis
-- GitHub CLI authentication (`gh auth login`) — required for private repositories and PR/commit/branch analysis
-
-Standard path/keyword/description searches use the agent's built-in file search tools and do not require `gh`.
 
 ## License
 

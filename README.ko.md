@@ -24,7 +24,7 @@ GitHub 저장소의 API 엔드포인트를 **읽기 전용**으로 분석하여 
 npx skills add divlook/agent-skill-api-radar
 ```
 
-> 스킬은 **`api-radar`** 라는 이름으로 설치됩니다 (`agent-skill-api-radar`가 아님).  
+> 스킬은 **`api-radar`** 라는 이름으로 설치됩니다 (`agent-skill-api-radar`가 아님).
 > 설치 후 에이전트는 `api-radar`로 스킬을 인식합니다.
 
 ### 특정 에이전트에만 설치
@@ -56,9 +56,24 @@ npx skills add divlook/agent-skill-api-radar -g
 | Claude Code | `.claude/skills/api-radar/` | `~/.claude/skills/api-radar/` |
 | Cursor | `.agents/skills/api-radar/` | `~/.cursor/skills/api-radar/` |
 
+## 필요 사항
+
+- [GitHub CLI (`gh`)](https://cli.github.com/) — PR/커밋/브랜치 분석 시 필요
+- GitHub CLI 인증 (`gh auth login`) — 비공개 저장소 및 PR/커밋/브랜치 분석 시 필요
+
+경로/키워드/기능 설명 검색은 에이전트 내장 파일 탐색 도구를 사용하므로 `gh`가 필요하지 않습니다.
+
 ## 사용법
 
-에이전트에 `[repo] [query]` 형식으로 프롬프트를 입력합니다:
+### 빠른 시작
+
+```
+/api-radar example-owner/example-repo /v1/users
+```
+
+**저장소**와 **쿼리**를 입력하면 Endpoint Reference Card가 반환됩니다.
+
+### 쿼리 유형
 
 | 유형 | 예시 | 언제 사용 |
 |------|------|---------|
@@ -121,8 +136,11 @@ payments PR#42
 ```
 
 파일 위치:
-- **npx 설치**: `<agent-skills-dir>/api-radar/references/repo-aliases.md`
-- **수동 설치**: 스킬을 복사한 경로
+
+| 에이전트 | 프로젝트 경로 |
+|---------|-------------|
+| Claude Code | `.claude/skills/api-radar/references/repo-aliases.md` |
+| OpenCode, Cursor | `.agents/skills/api-radar/references/repo-aliases.md` |
 
 ## 지원 프레임워크
 
@@ -133,13 +151,6 @@ payments PR#42
 | Java | Spring (RestController) |
 
 프레임워크 탐지는 best-effort로 동작합니다. 확정하지 못해도 동일한 출력 포맷으로 분석을 진행하며, 불확실한 항목은 `Uncertainties` 섹션에 명시됩니다.
-
-## 필요 사항
-
-- [GitHub CLI (`gh`)](https://cli.github.com/) — PR/커밋/브랜치 분석 시 필요
-- GitHub CLI 인증 (`gh auth login`) — 비공개 저장소 및 PR/커밋/브랜치 분석 시 필요
-
-경로/키워드/기능 설명 검색은 에이전트 내장 파일 탐색 도구를 사용하므로 `gh`가 필요하지 않습니다.
 
 ## 라이선스
 
