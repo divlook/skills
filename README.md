@@ -131,8 +131,8 @@ Edit `references/repo-aliases.md` inside the installed skill to define short ali
 Once configured, use the alias directly in queries:
 
 ```
-my-api /v1/users
-payments PR#42
+/api-radar my-api /v1/users
+/api-radar payments PR#42
 ```
 
 The file is located at:

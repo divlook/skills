@@ -131,8 +131,8 @@ npx skills add divlook/agent-skill-api-radar -g
 등록 후 쿼리에서 별칭을 바로 사용할 수 있습니다:
 
 ```
-my-api /v1/users
-payments PR#42
+/api-radar my-api /v1/users
+/api-radar payments PR#42
 ```
 
 파일 위치:
