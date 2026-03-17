@@ -1,6 +1,6 @@
 ---
 name: api-radar
-description: "Analyzes GitHub repository API endpoints (read-only) and documents them as Endpoint Reference Cards. Supports path lookup, keyword search, description-based search, and PR/commit/branch analysis."
+description: "Analyzes REST API endpoints in any GitHub repository (read-only) and generates structured API documentation as Endpoint Reference Cards. Supports Django, FastAPI, Express, NestJS, Spring and more. Find endpoints by path, keyword, or natural language — or analyze API changes in PRs, commits, and branches."
 ---
 
 # API Radar
