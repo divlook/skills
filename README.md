@@ -10,7 +10,7 @@ Supports path lookup, keyword search, description-based search, and PR/commit/br
 
 - **Instant API docs** — Point at any GitHub repo and get structured endpoint documentation in seconds
 - **PR review helper** — Quickly understand what API changes a PR introduces before approving
-- **Onboarding accelerator** — New to a codebase? Get a complete picture of its API surface instantly
+- **Onboarding accelerator** — Quickly find and analyze any API endpoint in an unfamiliar codebase
 - **Zero setup** — Works with 7 frameworks out of the box, no configuration needed
 
 ## Features
