@@ -6,6 +6,13 @@ An agent skill that analyzes GitHub repository API endpoints **read-only** and d
 
 Supports path lookup, keyword search, description-based search, and PR/commit/branch analysis.
 
+## Why API Radar?
+
+- **Instant API docs** — Point at any GitHub repo and get structured endpoint documentation in seconds
+- **PR review helper** — Quickly understand what API changes a PR introduces before approving
+- **Onboarding accelerator** — New to a codebase? Get a complete picture of its API surface instantly
+- **Zero setup** — Works with 7 frameworks out of the box, no configuration needed
+
 ## Features
 
 - **Path lookup** — Find endpoints by exact path (e.g. `/v1/users/{user_id}`)
