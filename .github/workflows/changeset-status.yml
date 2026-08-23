@@ -1,0 +1,38 @@
+name: Changeset Status
+
+on:
+  pull_request_target:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+
+jobs:
+  status:
+    if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+    name: Inspect changesets
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    outputs:
+      comment-body: ${{ steps.status.outputs.comment-body }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Generate changeset status
+        id: status
+        uses: changesets/action/pr-status@v2
+
+  comment:
+    name: Report changeset status
+    needs: status
+    runs-on: ubuntu-slim
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Update pull request comment
+        uses: changesets/action/pr-comment@v2
+        with:
+          body: ${{ needs.status.outputs.comment-body }}
