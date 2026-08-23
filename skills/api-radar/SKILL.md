@@ -1,259 +1,114 @@
 ---
 name: api-radar
-description: "Analyzes REST API endpoints in any GitHub repository (read-only) and generates structured API documentation as Endpoint Reference Cards. Supports Django, FastAPI, Express, NestJS, Spring and more. Find endpoints by path, keyword, or natural language — or analyze API changes in PRs, commits, and branches."
+description: "Maps and documents REST API endpoints from a local project or GitHub repository without changing it. Use for endpoint lookup by path, keyword, or behavior, and for API-change analysis across pull requests, commits, or branches."
 ---
 
 # API Radar
 
-Analyzes API endpoints in a GitHub repository **read-only** and produces reference documentation.
-Never creates, modifies, or deletes any code, file, branch, or PR — only analysis and documentation.
+Trace REST endpoints from route to observable behavior, then produce evidence-backed Endpoint Reference Cards.
 
-## Input Format
+Treat the source as immutable. Read files and repository metadata, search code and history, and inspect diffs, commits, branches, and pull requests. Keep the working tree, index, branches, remotes, authentication, and repository files unchanged. For GitHub, use only read operations. Generate analysis in chat; never call the application API.
 
-Users make requests in the following format:
-- `[repo] [query]`
+## Resolve the Input
 
-`repo` is one of:
-- `owner/repo` (recommended)
-- GitHub repository URL (e.g. `https://github.com/example-owner/example-repo`)
-- alias (if registered in [references/repo-aliases.md](references/repo-aliases.md))
+Accept a source plus a query, or use the current working directory when the source is omitted.
 
-`query` is one of:
-- API path (e.g. `/v1/users/{user_id}`)
-- keyword
-- description (in any language)
-- PR / commit / branch reference
+Sources:
 
-Input examples:
+- current working directory
+- existing relative or absolute local path
+- `owner/repo`
+- GitHub repository URL
 
-| Type | Example | Description |
-|------|---------|-------------|
-| API path | `example-owner/example-repo /companies/{company_id}/users` | When the exact path is known |
-| Keyword | `example-owner/example-repo partner` | When part of an endpoint/identifier is known |
-| Description | `example-owner/example-repo file upload API` | When only the functionality is known |
-| Repo URL | `https://github.com/example-owner/example-repo /v1/health` | Specifying repo by URL |
-| PR number | `example-owner/example-repo PR#123` | Analyze API changes in a specific PR |
-| Commit | `example-owner/example-repo commit 1a2b3c4` | Analyze based on a specific commit |
-| Branch | `example-owner/example-repo branch feature/file-upload` | Analyze based on a specific branch |
-| Alias | `my-api /v1/health` | Specify repo by alias |
+Queries:
 
-If the repo cannot be identified from the input (e.g. missing repo, typo, URL parse failure), always ask the user for clarification.
+- exact API path
+- keyword or behavior in any language
+- pull request number
+- commit
+- branch or comparison
 
-## Core Workflow
+Resolve the source in this order:
 
-### Step 0: Determine Search Mode
+1. An existing filesystem path is local.
+2. A GitHub URL is remote.
+3. `owner/repo` is remote only when it is not an existing path.
+4. With no explicit source, use the current working directory and treat the full request as the query.
 
-Check whether the input contains a PR, commit, or branch keyword.
+The environment is the source registry. Ask for a source only when neither the request nor the current working directory identifies a searchable project.
 
-| Keyword | Search Method |
-|---------|--------------|
-| PR #number, PR keyword | Retrieve PR metadata/changes via `gh` |
-| commit keyword | Retrieve commit via `gh` |
-| branch name | Retrieve branch/files via `gh` |
-| Other | String-based search (best-effort) |
+Follow [references/source-access.md](references/source-access.md) for the local or GitHub branch. Choose one source path and keep it for the request.
 
-#### GitHub CLI Auth Check
+## Workflow
 
-Before analyzing PR/commit/branch, verify authentication status:
+### 1. Establish the Snapshot
 
-```bash
-gh auth status
-```
+Resolve the source, requested revision or comparison, and immutable evidence revision:
 
-If not authenticated, output the following (do not perform authentication yourself):
+- Local working tree: record `working tree` and the current commit SHA when available.
+- Local commit or branch: resolve it to a commit SHA.
+- GitHub repository or branch: resolve the selected ref to a commit SHA.
+- Pull request: record its base, head, metadata, changed files, and diff.
 
-```
-⚠️ GitHub CLI authentication required.
-Please run 'gh auth login' in your terminal to complete authentication.
-```
+This step is complete when every later file read can be attributed to one source and revision. If a requested ref is ambiguous or absent, ask for that ref rather than silently using the default branch.
 
-### Step 1: Search Endpoints
+### 2. Profile the Project
 
-#### Default Search (best-effort)
+Find the backend boundary before searching broadly:
 
-Search strategy by input type:
+1. Inspect top-level structure and dependency or build manifests.
+2. Identify services in a monorepo.
+3. Find routing, schema, authentication, and exception-handling conventions.
 
-[When the API path is known]
-- Query: `@router.get("/companies")` or `path("companies/")`
-- Find endpoint code directly with the exact path
+Use [references/framework-detection.md](references/framework-detection.md) for framework-specific routing hints.
 
-[When only a keyword is known]
-- Query: `partner` `PartnerViewSet` `partner_router`
-- Explore candidate ViewSets, Routers, and API files
+This step is complete when likely route-definition locations and the framework convention are identified, or the attempted locations and remaining uncertainty are recorded. An unknown framework does not stop the analysis.
 
-[When only a description is known]
-- 1st search: original keywords
-- 2nd search: English translation / alternative terms
-- 3rd search: domain-specific terminology (e.g. `login`, `payment`, `upload`)
-- Present a list of related endpoints first, then do a detailed analysis after the user selects
+### 3. Find Endpoint Candidates
 
-[When multiple results are found]
-- Present related APIs in a table
-- Guide the user to select which API to analyze
+Search in widening passes:
 
-Example output:
+1. Exact path fragments and route declarations.
+2. Original keywords and identifiers.
+3. Translated or domain terms when the query is descriptive.
+4. Handler, controller, service, schema, test, and generated API-spec references.
 
-| # | Path | Method | Description |
-|---|------|--------|-------------|
-| 1 | /files | POST | Upload a file |
-| 2 | /files/{id} | GET | Retrieve file metadata |
-| 3 | /files/{id}/download | GET | Download file content |
+For pull requests and comparisons, inspect both directly changed routes and indirect API changes caused by schemas, permissions, serializers, middleware, or error handlers. Trace added and modified endpoints at the target revision; trace removed endpoints at the base revision.
 
-Please select the API number to analyze.
+When a broad query produces several plausible endpoints, return a compact candidate table with method, path, purpose, and evidence, then ask which candidate to trace. When the request clearly asks for a complete inventory or change analysis, trace every matching endpoint instead.
 
-#### PR/Commit/Branch Search (GitHub CLI)
+This step is complete when every plausible match is either selected for tracing or listed with evidence.
 
-[When PR number is known]
+### 4. Trace Observable Behavior
 
-```bash
-gh pr view {PR_NUMBER} --repo {owner}/{repo}
-gh pr view {PR_NUMBER} --repo {owner}/{repo} --json files,title,body,author
-gh pr diff {PR_NUMBER} --repo {owner}/{repo}
-```
+For each selected endpoint, follow actual symbols and composition from the route definition through:
 
-[PR keyword search]
+- full path construction, including mounted prefixes and versioning
+- HTTP method
+- path, query, header, and body inputs
+- request schema, validation, and required fields
+- authentication and permission conditions
+- handler and service behavior needed to explain the endpoint
+- response schema, status, and content type
+- exception mapping and observed error body
 
-```bash
-gh pr list --repo {owner}/{repo} --search "{keyword}" --state open --limit 10
-gh pr list --repo {owner}/{repo} --search "{keyword}" --state merged --limit 10
-```
+Distinguish evidence levels:
 
-Example output:
+- **Observed**: directly supported by source or diff.
+- **Inferred**: follows from composition but is not explicit in the inspected source.
+- **Unknown**: evidence was not found after the relevant route, shared middleware, schema, tests, and handlers were checked.
 
-| # | PR | Title | Author | Status |
-|---|----|-------|--------|--------|
-| 1 | #456 | feat: add file upload API | @developer | Open |
-| 2 | #423 | fix: file size validation error | @developer | Merged |
+Report framework defaults as unknown unless repository evidence supports them. Omit secrets and user data found in source.
 
-Please select the PR number to analyze.
+This step is complete when every field in the output is observed, explicitly inferred, or marked unknown with the search evidence.
 
-[Commit message search]
+### 5. Produce the Result
 
-```bash
-gh search commits --repo {owner}/{repo} "{keyword}" --limit 10
-```
+Use:
 
-[Analyze specific branch code]
+- [references/endpoint-card-template.md](references/endpoint-card-template.md) for endpoint analysis
+- [references/pr-analysis-template.md](references/pr-analysis-template.md) for pull request analysis
 
-```bash
-gh api repos/{owner}/{repo}/contents/{file_path}?ref={branch_name} --jq '.content'
-```
+For local evidence, cite `relative/path:line-line` and the resolved revision or `working tree`. For GitHub evidence, use a permalink pinned to the commit SHA.
 
-Note:
-- `.content` is base64-encoded and must be decoded.
-- On macOS use `base64 -D`; on GNU systems `base64 -d` may work.
-- When unsure, use `python3`:
-
-```bash
-python3 - <<'PY'
-import base64, sys
-print(base64.b64decode(sys.stdin.read()).decode('utf-8', errors='replace'))
-PY
-```
-
-Comparing branch with default branch (list of changed files):
-
-```bash
-gh repo view --repo {owner}/{repo} --json defaultBranchRef --jq '.defaultBranchRef.name'
-gh api repos/{owner}/{repo}/compare/{defaultBranch}...{branch} --jq '.files[].filename'
-```
-
-### Step 2: Repo Profiling
-
-For each request, quickly identify the backend framework/routing/schema hints in the repository on a best-effort basis, then maintain the same analysis flow (search → auth/permission → errors → Endpoint Card documentation).
-
-Refer to [references/framework-detection.md](references/framework-detection.md) for framework-specific detection hints.
-
-Do not stop work even if the framework/routing/schema cannot be confirmed.
-- Continue with Endpoint Card documentation using the same template/flow.
-- Leave uncertain or unconfirmed items in the `#### Uncertainties` section of the output, along with evidence (search terms / candidate file paths / reasoning).
-
-### Step 3: Extract Auth/Permission
-
-Common authentication methods (project-specific — check actual implementation):
-- API Key (e.g. `X-API-Key: {key}` header)
-- JWT Bearer token (e.g. `Authorization: Bearer {token}`)
-- Session / Cookie-based auth
-
-Token payload and session claims vary by project — extract only observed fields (e.g. `user_id`, `role`, `scope`).
-
-Permission info extraction (varies by framework/project):
-- Decorator-based: e.g. `@require_permissions("read:files")`, `@permission_required("admin")`
-- Middleware-based: e.g. role/scope checks in auth middleware
-- Inline checks: e.g. `if not user.has_perm("app.change_file"): raise PermissionDenied`
-
-Record only **observed** permission patterns — note the source file and mechanism.
-
-### Step 4: Analyze Errors
-
-Error response formats vary by API/project, so do not assume a "common format".
-
-Rules (Observed-first):
-- Only describe things **actually observed** from status codes/exception classes/handlers/common processing (e.g. middleware, exception filter/handler) as `Errors (Observed)`.
-- Since error body/field names/code schemes vary by project, only record actually confirmed fields/values.
-- Leave unobservable/uncertain items as `unknown`, with evidence (search terms used + candidate file paths).
-
-Information extractable from exception/error definitions (field names vary by project):
-- status_code: HTTP status code (400, 401, 403, 404, etc.)
-- error_code: value corresponding to business error code (e.g. `error_code`, `code`, `errorCode`, etc.)
-- message: value corresponding to user message (e.g. `message`, `error_message`, `detail`, etc.)
-
-### Step 5: Generate Output
-
-Document the analysis result according to the output template.
-
-- General API analysis: [references/endpoint-card-template.md](references/endpoint-card-template.md)
-- PR analysis: [references/pr-analysis-template.md](references/pr-analysis-template.md)
-
-## Constraints
-
-### Allowed Commands Only
-
-| Command | Purpose |
-|---------|---------|
-| `gh auth status` | Check GitHub CLI authentication status |
-| `gh repo view` | View repository info |
-| `gh pr view` | View PR details |
-| `gh pr diff` | View PR changes |
-| `gh pr list` | Search PR list |
-| `gh search commits` | Search commit messages |
-| `gh api` | Query GitHub API (GET only) |
-| `git status` | Check repository status |
-| `git diff` | Compare changes |
-| `git log` | View commit history |
-| `base64` | Base64 decoding |
-| `python` / `python3` | Data processing (decoding, etc.) |
-| `jq` | JSON parsing |
-
-### Denied Patterns
-
-The following commands are **never used**:
-
-| Pattern | Reason |
-|---------|--------|
-| `gh api --method` / `gh api -X` | No write API calls |
-| `gh auth login` | No auth changes |
-| `gh repo clone` | No repository cloning |
-| `git commit` / `git push` | No code changes |
-| `git checkout` / `git switch` | No branch switching |
-| `curl` / `wget` | No external HTTP requests |
-| `rm` / `mv` / `cp` | No file manipulation |
-
-### Principles
-
-- Do not modify or create code
-- Clearly indicate uncertain parts in the analysis result
-- Ask the user for additional information if the endpoint cannot be found in the repository
-- Do not output sensitive information (API keys, passwords, etc.)
-- Guide the user if GitHub CLI authentication is required
-
-## Resources
-
-### references/
-
-| Reference | When to Use |
-|-----------|-------------|
-| [references/repo-aliases.md](references/repo-aliases.md) | Repository alias mapping — when resolving repo from user input |
-| [references/endpoint-card-template.md](references/endpoint-card-template.md) | Endpoint Reference Card output format — for general API analysis output |
-| [references/pr-analysis-template.md](references/pr-analysis-template.md) | PR analysis output format — for PR-based API change analysis output |
-| [references/framework-detection.md](references/framework-detection.md) | Framework-specific routing/schema detection hints — referenced during Repo Profiling |
+The result is complete when every selected or changed endpoint has a card, every route, permission, schema, response, and error claim has a citation, and every unresolved point appears under `Uncertainties`.

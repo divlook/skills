@@ -2,4 +2,5 @@
 
 A collection of agent skills I use and share.
 
-- [`api-radar`](skills/api-radar): Analyzes REST API endpoints in GitHub repositories and generates structured endpoint reference cards.
+- [`api-radar`](skills/api-radar): Analyzes and documents REST API endpoints in local projects or GitHub repositories.
+  - [When and how to use API Radar](docs/api-radar.md)
