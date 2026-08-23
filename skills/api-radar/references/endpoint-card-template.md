@@ -1,6 +1,6 @@
 # Endpoint Reference Card Template
 
-Output API analysis results in the following fixed format.
+Use the following fixed sections. Replace every placeholder with repository evidence or `Unknown`.
 
 ---
 
@@ -8,46 +8,31 @@ Output API analysis results in the following fixed format.
 
 ### {METHOD} {PATH}
 
-**Purpose**: {1-2 sentences describing the problem this endpoint solves / usage scenario}
+**Purpose**: {Observed | Inferred | Unknown} — {1-2 sentences describing the problem this endpoint solves or its usage scenario}
 
-**Auth**: {Authentication method (e.g. Bearer JWT) + required permissions/conditions (if any)}
+**Auth**: {Observed | Inferred | Unknown} — {authentication method and required permissions or conditions}
 
 **Request**
-- Path params: {if any}
-- Query params: {if any}
-- Headers: {e.g. Authorization: Bearer {TOKEN}}
-- Body: {observed/inferred JSON fields and types, whether required}
+- Path params: {Observed | Inferred | Unknown} — {name, type, requirement, and constraints}
+- Query params: {Observed | Inferred | Unknown} — {name, type, requirement, and constraints}
+- Headers: {Observed | Inferred | Unknown} — {name, format, and requirement}
+- Body: {Observed | Inferred | Unknown} — {fields, types, requirements, and constraints}
 
-**Response (Observed)**
-- Status: {e.g. 200}
-- Content-Type: {e.g. application/json}
-- Body: {observed response example / field summary}
+**Response**
+- Status: {Observed | Inferred | Unknown} — {status}
+- Content-Type: {Observed | Inferred | Unknown} — {media type}
+- Body: {Observed | Inferred | Unknown} — {schema or field summary}
 
-**Errors (Observed)**
-- {status_code} {error_code/message} - {trigger condition (observed/inferred basis)}
+**Errors**
+- {Observed | Inferred | Unknown} — {status, code or message, and trigger condition}
 
 #### Evidence
 
-All facts included in the output (routing/permissions/schema/errors) should be backed by evidence where possible.
+Cite every purpose, route, permission, schema, response, and error claim.
 
-- Permalink format (when possible): `https://github.com/{owner}/{repo}/blob/{commitSHA}/{filePath}#L{start}-L{end}`
-- Do not create fixed links using branch names (main/master, etc.)
-
-#### Verification
-
-The values below are placeholders. Do not call internal/production environments directly.
-
-~~~bash
-BASE_URL="{BASE_URL}"
-TOKEN="{TOKEN}"
-
-curl -sS -i \
-  -H "Authorization: Bearer ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  "${BASE_URL}{PATH}" \
-  -d '{"example":"value"}'
-~~~
+- Local source: `{relativePath}:L{start}-L{end} ({commitSHA | working tree})`
+- GitHub source: `https://github.com/{owner}/{repo}/blob/{commitSHA}/{filePath}#L{start}-L{end}`
 
 #### Uncertainties
 
-- {uncertain/inferred item} - {why it is uncertain} - {additional files/search terms/tests to verify}
+- {None, or the unresolved item, why it is uncertain, and the files, search terms, or tests needed to resolve it}
