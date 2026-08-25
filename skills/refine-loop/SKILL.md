@@ -1,7 +1,6 @@
 ---
 name: refine-loop
 description: "Review and refine one plan, spec, skill, or document through a PASS/FAIL loop."
-disable-model-invocation: true
 ---
 
 # Refine Loop

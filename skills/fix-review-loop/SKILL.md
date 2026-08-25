@@ -1,7 +1,6 @@
 ---
 name: fix-review-loop
 description: "Fix one code defect through reproduction, repair, verification, and independent PASS/FAIL review."
-disable-model-invocation: true
 ---
 
 # Fix Review Loop
