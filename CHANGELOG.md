@@ -1,5 +1,11 @@
 # skills
 
+## 0.3.0
+
+### Minor Changes
+
+- 7fbedde: Allow models to invoke fix-review-loop, gen-pr, and refine-loop.
+
 ## 0.2.0
 
 ### Minor Changes
