@@ -2,7 +2,6 @@
 name: gen-pr
 description: "Generate a PR title and body from the actual changes between two branches, and optionally create the PR."
 argument-hint: "[current > target] [--create]"
-disable-model-invocation: true
 ---
 
 # Gen PR
