@@ -1,5 +1,11 @@
 # skills
 
+## 0.3.1
+
+### Patch Changes
+
+- eaac46b: Ask how to continue when Gen PR needs commits or pushes, with separately approved preparation and an existing-commits draft option.
+
 ## 0.3.0
 
 ### Minor Changes
