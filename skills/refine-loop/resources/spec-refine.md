@@ -1,6 +1,7 @@
 # Spec Review
 
-Use this resource for requirements, design specs, task specs, acceptance criteria, change proposals, spec deltas, and OpenSpec or Spec Kit artifacts.
+Use this resource for requirements, design specs, task specs, acceptance criteria, change proposals, and spec deltas.
+Also use it for OpenSpec or Spec Kit artifacts.
 
 ## Criteria
 
@@ -22,4 +23,5 @@ For OpenSpec, Spec Kit, or speckit targets, also check that:
 - Acceptance criteria map to requirements rather than only implementation details.
 - Terminology follows the surrounding spec set.
 
-`PASS` requires every requirement to be traceable to validation and every design or task decision to remain within approved scope.
+`PASS` requires every requirement to trace to validation.
+Every design or task decision must remain within approved scope.

@@ -1,10 +1,11 @@
 # Common Review Contract
 
-Apply this contract to every `refine-loop` review together with exactly one primary case resource.
+Apply this contract to every `refine-loop` review with exactly one primary case resource.
 
 ## Review Pass
 
-Compare the artifact with the framed intent, constraints, assumptions, acceptance criteria, and selected case rules. Check:
+Compare the artifact with the framed intent, constraints, assumptions, acceptance criteria, and selected case rules.
+Check:
 
 - Ambiguous terms, responsibilities, scope, and completion criteria
 - Incorrect or unsupported assumptions
@@ -17,28 +18,37 @@ Compare the artifact with the framed intent, constraints, assumptions, acceptanc
 - User decisions hidden as implementation details
 - Changes larger than the requested refinement
 
-When content appears missing, distinguish what the artifact must contain from session, tool, process, and handoff notes that belong only in the final report.
+For missing content, distinguish required artifact content from session, tool, process, and handoff notes that belong only in the report.
 
-Review evidence may cite the target, framed user or conversation evidence, an interpretive reference in the review packet, or an explicitly identified absence.
+Review evidence may cite:
 
-A review pass is complete when every applicable common and primary criterion has been checked, the `PASS` rationale or every `FAIL` finding cites review evidence, and the Reviewer Output Contract is satisfied.
+- The target
+- Framed user or conversation evidence
+- An interpretive reference in the review packet
+- An explicitly identified absence
+
+Review is complete only when:
+
+- You checked every applicable common and primary criterion.
+- The `PASS` rationale or every `FAIL` finding cites review evidence.
+- The result satisfies the Reviewer Output Contract.
 
 ## Reviewer Output Contract
 
-Use this structure when running or delegating the independent review. Adapt the surrounding wording to the available mechanism while preserving the output contract.
+Use this structure for an independent review.
+Adapt surrounding wording to the available mechanism. Preserve the output contract.
 
 ```text
 Review the provided artifact or document set as an independent reviewer.
-
-Apply the common review contract and the selected primary refinement rules.
+Apply the common review contract and selected primary refinement rules.
 Check every applicable criterion against review evidence and the framed intent.
 
 Start with exactly one top-level status: PASS or FAIL.
 
-PASS requires a brief rationale citing review evidence for each applicable criterion or coherent criterion group.
+For PASS, cite evidence for each applicable criterion or coherent criterion group in a brief rationale.
 
-FAIL requires at least one apparent, in-scope artifact defect or required user
-decision. List every finding with all fields:
+FAIL requires at least one apparent, in-scope artifact defect or required user decision.
+List every finding with all fields:
 - Finding
 - Severity: critical | high | medium | low
 - Evidence
@@ -52,7 +62,7 @@ Keep out-of-scope and handoff-only observations from determining the status.
 
 ## User Decision Boundary
 
-A finding requires a user decision when resolving it would decide:
+A finding requires a user decision when its resolution would decide:
 
 - Scope, policy, priority, product meaning, or strategic direction
 - Ownership, approval, or acceptance criteria
@@ -65,16 +75,24 @@ A finding requires a user decision when resolving it would decide:
 
 Assign every `FAIL` finding exactly one disposition:
 
-- **Directly actionable improvement** — Clarifies or completes existing intent without changing core behavior. Apply the smallest correct edit when editing is allowed.
+- **Directly actionable improvement** — Clarifies or completes existing intent without changing core behavior. Apply the smallest correct edit when the editing mode permits edits.
 - **User decision needed** — Falls within the User Decision Boundary. Ask before editing unless the invoking request activated Delegated Decision Mode.
-- **Delegated decision applied** — Records a User Decision Boundary choice made under Delegated Decision Mode according to `delegated-decisions.md`.
-- **Out of scope or deferred** — Concerns files, implementation, workflows, or goals outside the target. Leave the artifact unchanged and report it only when useful.
-- **Weak support or misunderstanding** — Lacks target evidence or applies an irrelevant criterion. Do not edit; carry the correction into the next review.
-- **Handoff-only observation** — Belongs in the final handoff rather than the artifact, such as session-specific operations, tool notes, or loop observations.
+- **Delegated decision applied** — Records a User Decision Boundary choice made under Delegated Decision Mode. Follow `delegated-decisions.md` for that choice.
+- **Out of scope or deferred** — Concerns files, implementation, workflows, or goals outside the target. Leave the artifact unchanged. Report the item only when useful.
+- **Weak support or misunderstanding** — Lacks target evidence or applies an irrelevant criterion. Leave the artifact unchanged. Carry the correction into the next review.
+- **Handoff-only observation** — Belongs in the final handoff rather than the artifact. Examples include session-specific operations, tool notes, or loop observations.
 
-Delegated decisions remain subject to `delegated-decisions.md`.
+### Confirmation review
 
-After triage, only an unresolved in-scope artifact defect or required user decision can sustain `FAIL`. When none remains, run one confirmation review in the same iteration without a resolution step. Its `PASS` ends the loop, a sustaining `FAIL` follows normal triage and resolution, and a second consecutive non-sustaining `FAIL` ends as `BLOCKED`. Out-of-scope, weakly supported, and handoff-only items must not recur as `FAIL` findings unless new review evidence changes their disposition.
+After triage, only an unresolved in-scope artifact defect or required user decision can sustain `FAIL`.
+When none remains, run one confirmation review in the same iteration without a resolution step.
+Handle its result:
+
+- `PASS`: end the loop.
+- Sustaining `FAIL`: follow normal triage and resolution.
+- Second consecutive non-sustaining `FAIL`: end as `BLOCKED`.
+
+Out-of-scope, weakly supported, and handoff-only items must not recur as `FAIL` findings without new evidence that changes their disposition.
 
 ## Directly Actionable Changes
 
@@ -91,24 +109,44 @@ Choose exactly one editing mode:
 
 - **Source editing** — Default for workspace files. Invoking `refine-loop` permits edits unless the user requests review-only or no-edit output.
 - **Working candidate** — Default for immutable sources. Invoking `refine-loop` permits proposed changes unless the user requests review-only or no-edit output.
-- **No-edit review** — Use when the user requests review-only or no-edit output; create no candidate and make no source or proposed edits. Stop after the first valid review and triage, subject to the shared confirmation rule under Finding Dispositions.
+- **No-edit review** — Use for review-only or no-edit requests. Create no candidate. Make no source or proposed edits. Stop after the first valid review and triage, subject to the confirmation rule under Finding Dispositions.
 
-For editable targets:
+### Editable targets
 
-Immediately before editing, re-read each editable target and compare it with the frozen review target. Apply changes only to an unchanged target. When new changes preserve the reviewed intent, increment `Iterations` and restart at Frame, reselect the primary resource, rerun Load, and then Review the refreshed target. If the refresh would exceed the iteration cap, or the changes conflict and cannot be reconciled safely, end as `BLOCKED`.
+Immediately before editing, re-read each editable target. Compare it with the frozen review target.
+Apply changes only to an unchanged target.
+End as `BLOCKED` if the refresh would exceed the iteration cap or conflicting changes prevent safe reconciliation.
+
+When new changes preserve the reviewed intent:
+
+1. Increment `Iterations`.
+2. Restart at Frame.
+3. Reselect the primary resource.
+4. Repeat Load.
+5. Review the refreshed target.
+
+For permitted edits:
 
 - Apply the smallest correct change for each actionable finding.
 - Preserve source intent, structure, and tone.
-- Keep user decisions as questions unless they were explicitly delegated.
+- Keep user decisions as questions unless the user explicitly delegated them.
 - Keep unrelated files and handoff-only observations unchanged.
 
-For working-candidate targets, apply each proposed change to the candidate used by the next review while leaving the source unchanged. Deliver the recoverable candidate through the Final Output Format's Candidate Delivery field.
+### Working-candidate targets
 
-A working-candidate `PASS` applies only to the delivered candidate. A no-edit-review status applies to the unchanged source.
+Apply each proposed change to the candidate used by the next review. Leave the source unchanged.
+Deliver the recoverable candidate through the Final Output Format's Candidate Delivery field.
+
+A working-candidate `PASS` applies only to the delivered candidate.
+A no-edit-review status applies to the unchanged source.
 
 ## PASS Gate
 
-`PASS` is valid only when the Review Pass completion criterion is met, no finding sustains `FAIL` after triage, and the selected primary resource's `PASS` criterion is satisfied.
+Return `PASS` only when:
+
+- The review meets the Review Pass completion criterion.
+- No finding sustains `FAIL` after triage.
+- The evidence satisfies the selected primary resource's `PASS` criterion.
 
 ## Final Output Format
 

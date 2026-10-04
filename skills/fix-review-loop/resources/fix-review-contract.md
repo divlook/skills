@@ -16,31 +16,33 @@ The complete review packet contains:
 - The selected Decision Mode and every delegated decision
 - Previous findings and the change summary on repeated reviews
 
-Every item must be present inline or through an accessible path. Missing evidence is itself review evidence; the reviewer must not assume it exists.
+Provide every packet item inline or through an accessible path.
+Treat missing evidence as review evidence. Do not assume it exists.
 
 ## Review Criteria
 
-Return `PASS` only when every applicable criterion is satisfied:
+Return `PASS` only when the evidence satisfies every applicable criterion:
 
 ### Correctness
 
-- The skill's Repair completion criterion is satisfied by the packet evidence.
+- The packet evidence satisfies the skill's Repair completion criterion.
 - Observed and expected behavior match the user request and evidence.
 - Callers, boundaries, state transitions, async behavior, concurrency, types, and error paths affected by the change remain correct.
-- No known security, privacy, data-loss, migration, compatibility, or external-service risk is concealed.
+- The packet reveals every known security, privacy, data-loss, migration, compatibility, or external-service risk.
 
 ### Verification
 
-- The skill's Verification completion criterion is satisfied by the packet evidence.
-- Tests preserve the original failure signal and observable contract; none are weakened, overfitted, deleted, or changed to suppress failure.
+- The packet evidence satisfies the skill's Verification completion criterion.
+- Tests preserve the original failure signal and observable contract.
+- Tests are not weakened, overfitted, deleted, or changed to suppress failure.
 - No known runtime, test, type, lint, or build failure remains within the reviewed scope.
 
 ### Scope and Quality
 
-- The skill's Repair completion criterion is satisfied without avoidable implementation scope.
+- The change satisfies the skill's Repair completion criterion without avoidable implementation scope.
 - The change follows existing repository patterns rather than adding a parallel convention.
 - Every new helper, abstraction, wrapper, dependency, configuration, file, and public name is necessary for the fix.
-- Every fallback, retry, log, comment, and defensive branch is justified by observed risk.
+- Observed risk justifies every fallback, retry, log, comment, and defensive branch.
 - No unrelated refactor, rename, formatting churn, unused artifact, dead branch, generic addition, or avoidable complexity remains.
 
 ### Decisions
@@ -53,9 +55,9 @@ Any supported violation requires `FAIL`.
 
 ## Reviewer Output Contract
 
-The first line of the response must be exactly `PASS` or `FAIL`; add no heading or preamble before it.
+Start the response with exactly `PASS` or `FAIL`. Add no heading or preamble before that line.
 
-For `PASS`, briefly state why every applicable criterion is satisfied.
+For `PASS`, briefly explain how the evidence satisfies every applicable criterion.
 
 For `FAIL`, list every supported finding:
 
@@ -69,12 +71,18 @@ FAIL
   Required change: <smallest sufficient correction or user decision>
 ```
 
-Findings must be precise, evidence-backed, and within the reviewed scope. Request a broad rewrite only when the current approach cannot safely fix the defect. Mark user-owned choices explicitly instead of inventing intent.
-A `FAIL` with no supported finding, or with an out-of-scope or unsupported item presented as a finding, is invalid under this contract.
+Keep findings precise, evidence-backed, and within the reviewed scope.
+Request a broad rewrite only when the current approach cannot safely fix the defect.
+Mark user-owned choices explicitly instead of inventing intent.
+A `FAIL` without a supported finding is invalid.
+A `FAIL` that presents an out-of-scope or unsupported item as a finding is also invalid.
 
 ## Finding Dispositions
 
-When Delegated Decision Mode is active and a finding surfaces a permitted user-owned choice, first make and record the choice under the skill's Decision Mode, then classify the resulting concrete correction below. Otherwise, classify every `FAIL` finding exactly once:
+For a permitted user-owned choice in Delegated Decision Mode, first make the choice under the skill's Decision Mode.
+Record the choice.
+Then classify the resulting concrete correction below.
+Otherwise, classify every `FAIL` finding exactly once:
 
 - **Directly actionable bug fix**: Corrects a root cause, regression, edge case, test failure, type failure, or verification gap within scope.
 - **Directly actionable cleanup**: Removes an unnecessary or unused artifact, unrelated refactor, weakened test, generic comment, excessive logging, or avoidable abstraction introduced by the change.
@@ -83,11 +91,22 @@ When Delegated Decision Mode is active and a finding surfaces a permitted user-o
 
 Summarize every valid finding under `Review Result`, then apply this precedence:
 
-1. For any hard-boundary blocker, restore only loop-authored boundary-crossing changes to their pre-loop baseline, list the blocker under `Remaining Issues`, and return the disposition to the workflow for `BLOCKED`.
-2. Otherwise, for any user decision, restore only loop-authored changes that implement the undecided choice, apply no other findings, list the decision under `User Decisions Needed` and unresolved actionable findings under `Remaining Issues`, and return the dispositions to the workflow for `FAIL`.
-3. Otherwise, handle directly actionable findings under the skill's iteration-cap rule: apply and list permitted changes under `Changes Applied`, or leave cap-blocked changes unmodified and list them under `Remaining Issues`.
+1. For any hard-boundary blocker:
+   - Restore only loop-authored boundary-crossing changes to their pre-loop baseline.
+   - List the blocker under `Remaining Issues`.
+   - Return the disposition to the workflow for `BLOCKED`.
+2. Otherwise, for any user decision:
+   - Restore only loop-authored changes that implement the undecided choice.
+   - Apply no other findings.
+   - List the decision under `User Decisions Needed`.
+   - List unresolved actionable findings under `Remaining Issues`.
+   - Return the dispositions to the workflow for `FAIL`.
+3. Otherwise, follow the skill's iteration-cap rule for directly actionable findings:
+   - Apply permitted changes. List them under `Changes Applied`.
+   - Leave cap-blocked changes unmodified. List them under `Remaining Issues`.
 
-Record choices already made under active Delegated Decision Mode under `Delegated Decisions Applied`; they are packet context, not finding dispositions.
+Record choices already made in Delegated Decision Mode under `Delegated Decisions Applied`.
+These choices are packet context, not finding dispositions.
 
 ## Final Output Format
 

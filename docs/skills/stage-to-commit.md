@@ -40,3 +40,5 @@ Stage to Commit:
 5. commits that exact snapshot and verifies the resulting subject
 
 Invocation authorizes one immediate commit. The skill does not stage, unstage, or edit files. If the stage is empty, it reports the current Git status and stops. If the staged diff changes during analysis, it analyzes the new snapshot again before committing.
+
+A failed commit returns the command error, not a success report. A successful result includes the analyzed changes, executed message, commit hash, and matching subject.

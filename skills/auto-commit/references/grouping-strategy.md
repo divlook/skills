@@ -26,7 +26,7 @@ If any answer is no, split the group again or merge the dependent changes into t
 
 ## Mixed Files
 
-When one file contains hunks with multiple purposes, list the file and each purpose in the plan.
+If one file contains hunks with multiple purposes, list that file in the plan. List each purpose beside it.
 
 - If the hunk boundaries are clear, split them with `git add -p`.
 - If the purposes overlap on the same lines or syntax unit, commit the file as one unit.
@@ -44,4 +44,4 @@ Prefer actual dependencies over a fixed order by type.
 
 ## Completion Criterion
 
-Every hunk belongs to exactly one group, and every group's subject, revert boundary, and prerequisites are explained.
+Complete grouping only when every hunk belongs to exactly one group. Explain every group's subject, revert boundary, and prerequisites.

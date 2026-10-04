@@ -27,7 +27,8 @@ Example:
 /fix-review-loop Search crashes when the API returns an empty items array. Reproduce with pnpm test search-empty.
 ```
 
-Add the independent `--yolo` token to let the skill make the smallest reasonable user-owned behavior decision when the repository and request provide enough evidence:
+Add the independent `--yolo` token to permit the smallest reasonable user-owned behavior decision.
+The repository and request must provide enough evidence for that decision.
 
 ```text
 /fix-review-loop --yolo Fix the empty search response crash.
@@ -46,4 +47,6 @@ Fix Review Loop:
 5. runs an independent review against correctness, verification, scope, quality, and decision rules
 6. resolves actionable findings and repeats, up to 10 review cycles
 
-The final report states `PASS`, `FAIL`, or `BLOCKED`, the reviewed target, changes, verification evidence, review result, remaining issues, and decisions. Only `PASS` means the fix loop completed.
+The final report states `PASS`, `FAIL`, or `BLOCKED` and identifies the reviewed target.
+It includes changes, verification evidence, review results, remaining issues, and decisions.
+Only `PASS` means the fix loop completed.

@@ -1,6 +1,6 @@
 # PR Analysis Template
 
-PR analysis output follows this fixed order without OpenAPI/spec output.
+Use this fixed order for PR analysis. Exclude OpenAPI and specification output.
 
 ---
 

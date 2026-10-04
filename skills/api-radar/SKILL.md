@@ -5,13 +5,15 @@ description: "Maps and documents REST API endpoints from a local project or GitH
 
 # API Radar
 
-Trace REST endpoints from route to observable behavior, then produce evidence-backed Endpoint Reference Cards.
+Trace REST endpoints from each route to its observable behavior. Produce evidence-backed Endpoint Reference Cards.
 
-Treat the source as immutable. Read files and repository metadata, search code and history, and inspect diffs, commits, branches, and pull requests. Keep the working tree, index, branches, remotes, authentication, and repository files unchanged. For GitHub, use only read operations. Generate analysis in chat; never call the application API.
+Treat the source as immutable. Read files and repository metadata. Search code and history. Inspect diffs, commits, branches, and pull requests.
+
+Keep the working tree, index, branches, remotes, authentication, and repository files unchanged. For GitHub, use only read operations. Generate analysis in chat. Never call the application API.
 
 ## Resolve the Input
 
-Accept a source plus a query, or use the current working directory when the source is omitted.
+Accept a source plus a query. If the request omits the source, use the current working directory.
 
 Sources:
 
@@ -37,7 +39,9 @@ Resolve the source in this order:
 
 The environment is the source registry. Ask for a source only when neither the request nor the current working directory identifies a searchable project.
 
-Follow [references/source-access.md](references/source-access.md) for the local or GitHub branch. Choose one source path and keep it for the request.
+Read [Source Access](references/source-access.md) after you resolve a local or GitHub source. Use its matching source branch. Keep one source path for the request.
+
+Complete input resolution only when you have a searchable source, query, and matching access branch.
 
 ## Workflow
 
@@ -62,7 +66,7 @@ Find the backend boundary before searching broadly:
 
 Use [references/framework-detection.md](references/framework-detection.md) for framework-specific routing hints.
 
-This step is complete when likely route-definition locations and the framework convention are identified, or the attempted locations and remaining uncertainty are recorded. An unknown framework does not stop the analysis.
+Complete this step when you identify likely route-definition locations and the framework convention. Otherwise, record every attempted location and the remaining uncertainty. An unknown framework does not stop the analysis.
 
 ### 3. Find Endpoint Candidates
 
@@ -73,9 +77,9 @@ Search in widening passes:
 3. Translated or domain terms when the query is descriptive.
 4. Handler, controller, service, schema, test, and generated API-spec references.
 
-For pull requests and comparisons, inspect both directly changed routes and indirect API changes caused by schemas, permissions, serializers, middleware, or error handlers. Trace added and modified endpoints at the target revision; trace removed endpoints at the base revision.
+For pull requests and comparisons, inspect directly changed routes. Inspect indirect API changes caused by schemas, permissions, serializers, middleware, or error handlers. Trace added and modified endpoints at the target revision. Trace removed endpoints at the base revision.
 
-When a broad query produces several plausible endpoints, return a compact candidate table with method, path, purpose, and evidence, then ask which candidate to trace. When the request clearly asks for a complete inventory or change analysis, trace every matching endpoint instead.
+When a broad query produces several plausible endpoints, return a compact candidate table. Include method, path, purpose, and evidence. Ask which candidate to trace. When the request clearly asks for a complete inventory or change analysis, trace every matching endpoint instead.
 
 This step is complete when every plausible match is either selected for tracing or listed with evidence.
 
@@ -96,11 +100,11 @@ Distinguish evidence levels:
 
 - **Observed**: directly supported by source or diff.
 - **Inferred**: follows from composition but is not explicit in the inspected source.
-- **Unknown**: evidence was not found after the relevant route, shared middleware, schema, tests, and handlers were checked.
+- **Unknown**: You found no evidence after checking the relevant route, shared middleware, schema, tests, and handlers.
 
 Report framework defaults as unknown unless repository evidence supports them. Omit secrets and user data found in source.
 
-This step is complete when every field in the output is observed, explicitly inferred, or marked unknown with the search evidence.
+Complete this step only when you classify every output field as observed, explicitly inferred, or unknown with search evidence.
 
 ### 5. Produce the Result
 
@@ -109,6 +113,10 @@ Use:
 - [references/endpoint-card-template.md](references/endpoint-card-template.md) for endpoint analysis
 - [references/pr-analysis-template.md](references/pr-analysis-template.md) for pull request analysis
 
-For local evidence, cite `relative/path:line-line` and the resolved revision or `working tree`. For GitHub evidence, use a permalink pinned to the commit SHA.
+Apply the citation formats in [Endpoint Reference Card Template](references/endpoint-card-template.md) to every evidence claim.
 
-The result is complete when every selected or changed endpoint has a card, every route, permission, schema, response, and error claim has a citation, and every unresolved point appears under `Uncertainties`.
+Complete the result only when all these conditions apply:
+
+- Every selected or changed endpoint has a card.
+- Every route, permission, schema, response, and error claim has a citation.
+- Every unresolved point appears under `Uncertainties`.

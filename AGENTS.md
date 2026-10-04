@@ -3,17 +3,25 @@
 ## Communication and language
 
 - Reply to each user in the language they use.
-- Write repository content in English, including code, comments, documentation, changesets, commit messages, pull request text, and release notes.
+- Write all repository content in English. This includes code, comments, documentation, changesets, commit messages, pull request text, and release notes.
 
 ## Workflow
 
-1. Research before editing. Inspect the requested target, neighboring conventions, references and callers, tests, documentation, configuration, and automation that can be affected. Account for every affected path and side effect before changing files.
-2. Implement the smallest coherent change using the repository's existing structure and terminology. Update every affected reference, test, document, and configuration in the same change.
-3. Verify the observable behavior through the narrowest relevant command or scenario. Report exactly what was exercised and any remaining uncertainty.
+1. Research before editing. Inspect the target and all potentially affected conventions, references, callers, tests, documentation, configuration, and automation. Finish research only when you can identify every affected path and side effect.
+2. Implement the smallest coherent change with the repository's existing structure and terminology. Finish implementation only when the same change updates every affected reference, test, document, and configuration.
+3. Check observable behavior with the narrowest relevant command or scenario. Report the exact checks you exercised. Report any remaining uncertainty.
 
-A task is complete only when the requested behavior works end to end, affected paths are accounted for, and repository content remains internally consistent.
+A task is complete only when all these conditions hold:
+
+- The requested behavior works end to end.
+- You can account for every affected path.
+- Repository content remains internally consistent.
 
 ## Context pointers
 
-- **Skill changes:** Before adding, changing, or reviewing a skill, its references, or its user documentation, read [`docs/skill-development.md`](docs/skill-development.md). Follow its inventory and synchronization checks for every affected skill.
-- **Pull requests and releases:** Before creating or updating a pull request, selecting a version bump, adding a changeset, or changing release automation, read [`docs/releasing.md`](docs/releasing.md). Every pull request must include a release changeset or an explicit empty changeset, except the automated Changesets release pull request.
+- **Skills:** Read [the development workflow](docs/skill-development.md) before you add, change, or review skills, their references, or their user documentation. Apply its inventory and synchronization checks to every affected skill.
+- **Releases:** Read [the release policy](docs/releasing.md) before any of these actions:
+  - Create or update a pull request.
+  - Select a version bump.
+  - Add a changeset.
+  - Change release automation.

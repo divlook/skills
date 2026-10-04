@@ -28,8 +28,8 @@ commit. Commit only the snapshot revalidated below.
 
 Run `git diff --cached --stat`.
 
-If it lists no staged path, run `git status --short`, return **Empty stage**,
-and stop. Otherwise, retain the stat output for the result.
+- If it lists no staged path, run `git status --short`. Return **Empty stage** and stop.
+- Otherwise, retain the stat output for the result.
 
 Complete this step only when the stat identifies at least one staged path.
 
@@ -43,12 +43,12 @@ git log -10 --format=%s
 ```
 
 Retain the staged diff as the analyzed snapshot. Read
-[commit message conventions](references/commit-conventions.md), then choose one
-message that:
+[commit message conventions](references/commit-conventions.md) before you choose the message.
+Choose one message that:
 
-- accounts for every staged hunk;
-- follows Conventional Commits and the reference;
-- matches the recent repository's language and scope style;
+- accounts for every staged hunk
+- follows Conventional Commits and the reference
+- matches the recent repository's language and scope style
 - uses a body only when the title cannot cover every significant change.
 
 Complete this step only when every staged hunk maps to the title, body, or
@@ -56,12 +56,12 @@ footer without unsupported claims.
 
 ### 3. Revalidate the snapshot
 
-Run `git diff --cached` again and compare its complete output byte-for-byte
-with the analyzed snapshot.
+Run `git diff --cached` again.
+Compare its complete output byte-for-byte with the analyzed snapshot.
 
 - **Identical:** continue.
 - **Changed:** replace the analyzed snapshot and repeat step 2.
-- **Empty:** run `git status --short`, return **Empty stage**, and stop.
+- **Empty:** Run `git status --short`. Return **Empty stage** and stop.
 
 Complete this step only when the current staged diff is identical to the diff
 used to choose the message.
