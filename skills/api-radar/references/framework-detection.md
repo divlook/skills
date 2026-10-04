@@ -1,6 +1,8 @@
 # Framework Routing Hints
 
-Use dependency and build manifests to select the relevant framework hints. Find route composition first, then trace the request and response schema types named by the route.
+Use dependency and build manifests to select the relevant framework hints.
+Find route composition first.
+Trace the request and response schema types named by the route.
 
 ## Python
 

@@ -1,6 +1,6 @@
 # API Radar
 
-API Radar finds and traces REST API endpoints in a local project or GitHub repository. It reads route definitions, schemas, authentication, permissions, handlers, and error mapping, then returns evidence-backed Endpoint Reference Cards.
+API Radar finds and traces REST API endpoints in a local project or GitHub repository. It reads route definitions, schemas, authentication, permissions, handlers, and error mapping. It returns evidence-backed Endpoint Reference Cards.
 
 ## When to use it
 
@@ -12,7 +12,7 @@ Use API Radar when you need to:
 - inventory matching endpoints across a service or monorepo
 - inspect a repository without changing its files, branches, or working tree
 
-API Radar is an analysis tool. It reads repository evidence rather than calling the application API or testing a deployed service, and marks unresolved details as unknown. It does not modify source code.
+API Radar is an analysis tool. It reads repository evidence rather than calling the application API or testing a deployed service, and marks unresolved details as unknown. It does not change source code.
 
 ## How to invoke it
 

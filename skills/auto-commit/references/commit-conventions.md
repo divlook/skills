@@ -40,10 +40,10 @@ Use a body only when the subject cannot explain the entire group.
 
 - Separate it from the subject with a blank line.
 - Use bullets for multiple changes.
-- Explain what changed and why the changes belong together; do not repeat the implementation process.
+- Explain what changed and why the changes belong together. Do not repeat the implementation process.
 - Wrap lines at 72 characters.
 
-For an incompatible change, add a final paragraph beginning with `BREAKING CHANGE:` and state what users must change. Add `Closes #123` or `Refs #123` as a footer only when the issue relationship has been verified.
+For an incompatible change, add a final paragraph beginning with `BREAKING CHANGE:` and state what users must change. Add `Closes #123` or `Refs #123` as a footer only when you verify the issue relationship.
 
 ## Completion Criterion
 

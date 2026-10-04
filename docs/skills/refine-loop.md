@@ -11,7 +11,8 @@ Use Refine Loop for:
 - agent skill packages and their resources
 - README files, guides, policies, and general documentation
 
-The target can be pasted content, the current conversation, one file, one directory, or a tightly related file set. A directory must resolve to one primary artifact type and no more than 10 relevant files.
+The target can be pasted content, the current conversation, one file, one directory, or a tightly related file set.
+A directory must resolve to one primary artifact type and no more than 10 relevant files.
 
 ## How to invoke it
 
@@ -31,7 +32,7 @@ Examples:
 /refine-loop Review this specification without editing it: <specification>
 ```
 
-Add the independent `--yolo` token to let the skill choose the smallest reasonable option when a finding requires a user-owned decision:
+Add the independent `--yolo` token to permit the smallest reasonable option for a finding that requires a user-owned decision.
 
 ```text
 /refine-loop --yolo docs/search-spec.md
@@ -47,6 +48,12 @@ The flag does not authorize secrets, permissions, security policy, data migratio
 
 ## What it does
 
-Refine Loop frames the artifact's intent and constraints, loads only the references needed to evaluate it, applies common rules plus one artifact-specific rule set, triages every finding, and repeats after supported changes. It stops on `PASS`, an unresolved decision or review defect (`FAIL`), or an unusable resource or unsafe conflict (`BLOCKED`), with a maximum of 10 iterations.
+Refine Loop frames the artifact's intent and constraints.
+It loads only references needed for evaluation and applies common rules plus one artifact-specific rule set.
+It triages every finding and repeats after supported changes.
+It stops on `PASS`, unresolved decisions or review defects (`FAIL`), or unusable resources or unsafe conflicts (`BLOCKED`).
+The loop permits a maximum of 10 iterations.
 
-The final report identifies the reviewed baseline, delivered candidate when applicable, applied or proposed changes, remaining issues, user decisions, delegated decisions, and handoff notes. Only `PASS` means refinement completed.
+The final report identifies the reviewed baseline and delivered candidate when applicable.
+It includes applied or proposed changes, remaining issues, user decisions, delegated decisions, and handoff notes.
+Only `PASS` means refinement completed.

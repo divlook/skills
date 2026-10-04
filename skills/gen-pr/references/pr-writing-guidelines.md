@@ -52,7 +52,7 @@ Keep the complete title at or below 50 characters. Do not use a trailing period,
 
 ## Body
 
-When a project template exists, it defines the body structure. Preserve required Markdown, fixed text, instructions, and checklists, and keep generated prose brief. Leave unverified facts and checkboxes unfilled.
+When a project template exists, it defines the body structure. Preserve required Markdown, fixed text, instructions, and checklists. Keep generated prose brief. Leave unverified facts and checkboxes unfilled.
 
 Fill only sections supported by evidence:
 
@@ -77,12 +77,12 @@ Add `Key Changes` only when one summary sentence cannot clearly cover every sign
 - [Significant change]
 ```
 
-Add `Technical Details` only when a reviewer needs implementation context to understand or verify the change. Add `Breaking Changes` only for an actual compatibility break and include migration instructions. Remove every empty heading and placeholder from the final body.
+Add `Technical Details` only when a reviewer needs implementation context to understand or verify the change. Add `Breaking Changes` only for an actual compatibility break. For an actual compatibility break, include migration instructions. Remove every empty heading and placeholder from the final body.
 
 ## Completion Criteria
 
 - There is exactly one selected title, no title alternatives, and one concise, complete body.
 - Every concrete sentence has supporting evidence.
-- Every significant change is covered with at most three Key Changes bullets.
-- The project template's required structure and unverified checkbox states are preserved.
+- At most three Key Changes bullets cover every significant change.
+- The body preserves the project template's required structure and unverified checkbox states.
 - No speculation, duplication, empty placeholder, or unnecessary section remains.

@@ -2,6 +2,12 @@
 
 A collection of agent skills I use and share.
 
+## Contributor documentation
+
+- Before changing repository files, read [project guidelines](AGENTS.md).
+- When changing a skill or its documentation, follow [skill development](docs/skill-development.md).
+- Before preparing a pull request or changing release automation, read [pull requests and releases](docs/releasing.md).
+
 ## Installation
 
 ```bash

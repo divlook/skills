@@ -1,6 +1,7 @@
 # Documentation Review
 
-Use this resource for README files, guides, decision records, policy documents, product notes, operational docs, and general documentation not covered by another primary resource.
+Use this resource for README files, guides, decision records, policy documents, product notes, and operational docs.
+Also use it for general documentation that no other primary resource covers.
 
 ## Criteria
 
@@ -8,12 +9,13 @@ Check that:
 
 - The audience, purpose, and scope are explicit.
 - Required context is present without assuming unstated reader knowledge.
-- Terms and concepts are defined or used consistently.
+- The document defines terms and concepts or uses them consistently.
 - Procedures are correctly ordered and leave the next action clear.
 - Examples teach the stated behavior and agree with the rules.
 - Assumptions, limitations, decision points, and important caveats are visible.
 - Sections and referenced documents do not contradict one another.
-- Multiple audiences are separated or clearly signposted.
-- Ownership, freshness, and update triggers are stated when maintenance depends on them.
+- The document separates multiple audiences or clearly identifies the content for each audience.
+- The document states ownership, freshness, and update triggers when maintenance depends on them.
 
-`PASS` requires the intended reader to know what the document means, what applies to them, and what to do next without guessing.
+`PASS` requires the intended reader to understand the document without guessing.
+The reader must know what applies to them and what to do next.

@@ -4,7 +4,7 @@ Choose the branch established by `Resolve the Input` and keep the source immutab
 
 ## Local source
 
-Use filesystem-native read, glob, and search tools for the working tree. Use `git` only for repository metadata, history, diffs, and content at an unmounted revision.
+Use filesystem-native tools to read, list, and search the working tree. Use `git` only for repository metadata, history, diffs, and content at an unmounted revision.
 
 Useful read-only operations:
 
@@ -32,4 +32,4 @@ gh pr diff {number} --repo {owner}/{repo}
 gh api "repos/{owner}/{repo}/compare/{base}...{head}"
 ```
 
-Run the required read operation directly. If authentication blocks it, state the failed source and ask the user to run `gh auth login`. Resume remote analysis only after evidence is accessible.
+Run the required read operation directly. If authentication blocks it, state the failed source. Ask the user to run `gh auth login`. Resume remote analysis only after evidence is accessible.

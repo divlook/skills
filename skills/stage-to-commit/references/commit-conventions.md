@@ -4,9 +4,8 @@ Apply every rule below when choosing a message for `stage-to-commit`.
 
 ## Message contract
 
-Describe the staged snapshot's observable changes. Ground every title, body
-line, issue reference, and breaking-change claim in the diff; infer nothing
-from unstaged files or intent.
+Describe the staged snapshot's observable changes. Ground every title, body line, issue reference, and breaking-change claim in the diff.
+Infer nothing from unstaged files or intent.
 
 Use:
 
@@ -54,7 +53,7 @@ when it merely repeats the subject.
 - Keep the type lowercase.
 - Use imperative mood for English.
 - End without a period.
-- Target 50 characters; never exceed 72 characters.
+- Target 50 characters. Never exceed 72 characters.
 
 Examples:
 

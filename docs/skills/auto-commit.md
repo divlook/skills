@@ -35,4 +35,6 @@ Auto Commit:
 4. stages and commits each planned group without waiting for another confirmation
 5. reports the resulting commit hashes and any changes left behind
 
-Invocation authorizes immediate commits. Auto Commit does not edit file contents. When changes were already staged, it clears only the Git index before rebuilding the planned groups; working-tree content remains intact. Mixed files are split only when their hunk boundaries are clearly separable and each intermediate commit remains valid.
+Invocation authorizes immediate commits. Auto Commit does not edit file contents. When changes were already staged, it clears only the Git index before rebuilding the planned groups. Working-tree content remains intact. Mixed files are split only when their hunk boundaries are clearly separable and each intermediate commit remains valid.
+
+A clean working tree produces a clean-state report without a commit. If a commit fails, Auto Commit stops before the next group. It reports the error and leaves the current index unchanged.
