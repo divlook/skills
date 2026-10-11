@@ -10,11 +10,14 @@ The complete review packet contains:
 - The full active `fix-review-loop` skill
 - The user request and framed observed and expected behavior
 - The reviewed scope and constraints
+- Evidence for each additional affected path and the reason for any new equivalent implementation
 - Pre-fix reproduction or failing-path evidence
 - The actual current code change
 - Verification commands or scenarios, their results, unavailable checks, and residual risks
 - The selected Decision Mode and every delegated decision
 - Previous findings and the change summary on repeated reviews
+
+Keep the original scope and acceptance criteria in repeated packets.
 
 Provide every packet item inline or through an accessible path.
 Treat missing evidence as review evidence. Do not assume it exists.
@@ -34,13 +37,15 @@ Return `PASS` only when the evidence satisfies every applicable criterion:
 
 - The packet evidence satisfies the skill's Verification completion criterion.
 - Tests preserve the original failure signal and observable contract.
-- Tests are not weakened, overfitted, deleted, or changed to suppress failure.
+- Tests are not weakened, overfitted, or changed to suppress a valid failure.
+- Obsolete implementation-only tests are removed without removing coverage of valid observable behavior.
 - No known runtime, test, type, lint, or build failure remains within the reviewed scope.
 
 ### Scope and Quality
 
 - The change satisfies the skill's Repair completion criterion without avoidable implementation scope.
 - The change follows existing repository patterns rather than adding a parallel convention.
+- The packet evidence satisfies the skill's reuse, consistency, and removal requirements.
 - Every new helper, abstraction, wrapper, dependency, configuration, file, and public name is necessary for the fix.
 - Observed risk justifies every fallback, retry, log, comment, and defensive branch.
 - No unrelated refactor, rename, formatting churn, unused artifact, dead branch, generic addition, or avoidable complexity remains.
@@ -51,7 +56,10 @@ Return `PASS` only when the evidence satisfies every applicable criterion:
 - Delegated choices record the chosen option, evidence, and residual risk.
 - No delegated choice crosses a hard boundary in the skill.
 
-Any supported violation requires `FAIL`.
+Return `FAIL` only for a concrete, evidence-backed violation within the framed scope.
+An observed contract violation, necessary verification gap, or unnecessary change can support a finding.
+Speculative inputs, future extensibility, stylistic preferences, and unrelated pre-existing defects do not support findings.
+When no supported violation remains, return `PASS` without requesting more work.
 
 ## Reviewer Output Contract
 
@@ -72,7 +80,8 @@ FAIL
 ```
 
 Keep findings precise, evidence-backed, and within the reviewed scope.
-Request a broad rewrite only when the current approach cannot safely fix the defect.
+Tie each required change to the reported defect, a fix-caused regression, or a violated review criterion within scope.
+Request a broad rewrite only with evidence that the current approach cannot safely fix the defect.
 Mark user-owned choices explicitly instead of inventing intent.
 A `FAIL` without a supported finding is invalid.
 A `FAIL` that presents an out-of-scope or unsupported item as a finding is also invalid.
@@ -84,8 +93,8 @@ Record the choice.
 Then classify the resulting concrete correction below.
 Otherwise, classify every `FAIL` finding exactly once:
 
-- **Directly actionable bug fix**: Corrects a root cause, regression, edge case, test failure, type failure, or verification gap within scope.
-- **Directly actionable cleanup**: Removes an unnecessary or unused artifact, unrelated refactor, weakened test, generic comment, excessive logging, or avoidable abstraction introduced by the change.
+- **Directly actionable bug fix**: Corrects the reported root cause, a directly affected contract violation, or a fix-caused regression. This includes necessary verification gaps.
+- **Directly actionable cleanup**: Removes unnecessary elements introduced by the change or existing elements made obsolete by the fix. This includes duplicate implementations and avoidable abstractions. Restore tests weakened by the change.
 - **User decision needed**: In default mode, identifies a user-owned choice defined by the skill's Decision Mode that does not cross a hard boundary.
 - **Hard-boundary blocker**: Identifies an action or choice prohibited by the skill's hard boundaries.
 
