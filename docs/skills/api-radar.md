@@ -24,7 +24,7 @@ Ask for an API analysis in natural language. Include a source when it is not the
 
 Supported sources:
 
-- current working directory when the source is omitted
+- current working directory when you omit the source
 - existing relative or absolute local path
 - GitHub `owner/repo`
 - GitHub repository URL
@@ -95,10 +95,60 @@ Each Endpoint Reference Card includes:
 - path, query, header, and body inputs
 - response status, content type, and schema
 - error responses and their trigger conditions
-- evidence level for each field: observed, inferred, or unknown
+- evidence level for each field: source-supported, inferred, or unknown
 - source citations for each claim
 - uncertainties and the evidence needed to resolve them
 
-Local citations use a relative file path, line range, and commit SHA or `working tree`. GitHub citations are permalinks pinned to a commit SHA.
+Local citations use a relative file path, line range, and commit SHA or `working tree`.
+GitHub citations are permalinks pinned to a commit SHA. Each card identifies its analysis revision.
 
-Pull request analysis starts with PR metadata and a table of added, modified, and removed endpoints, followed by a card for each changed endpoint.
+## Evidence levels
+
+- **Source-supported**: source or diff supports the claim, including explicit route composition. Citations identify the necessary connections.
+- **Inferred**: the claim depends on an execution, environment, or external-system assumption. The result states that assumption.
+- **Unknown**: inspected evidence does not establish the value. The result identifies inspected evidence and what remains missing.
+
+These levels describe repository evidence, not successful live requests.
+`Source-supported — None` means evidence establishes absence. For example, an explicit request schema can establish that the endpoint accepts no body.
+A missing schema means `Unknown`, not `None`. Framework defaults remain unknown unless repository evidence supports them.
+
+## Analysis revisions and coverage
+
+Committed evidence uses resolved commit SHAs rather than moving branch names.
+Search results locate candidates. API Radar confirms them at the analysis revision and inspects routing locations there for additional matches.
+Working-tree analysis includes uncommitted files. It labels that evidence as `working tree` rather than an immutable snapshot.
+If API Radar detects a file change during analysis, it reads the affected evidence again.
+
+The result identifies investigated services, routing locations, and revisions.
+It labels incomplete coverage as `Partial analysis` and identifies the missing scope.
+Dynamic routing and unresolved effects from shared middleware can prevent a complete inventory.
+A request for every matching endpoint keeps its requested scope. A partial result does not claim to be a complete inventory.
+
+## Change analysis
+
+| Request | Comparison start | Target |
+|---------|------------------|--------|
+| PR or branch changes | Common ancestor of base and head | Head commit |
+| Commit changes | Parent commit | Requested commit |
+| Explicit revision state comparison | Requested start commit | Requested target commit |
+
+The same comparison start determines the change list and previous endpoint behavior.
+For branch changes, specify the base when the repository does not establish one.
+For merge commits, specify the parent when more than one could apply. A root commit compares against the empty tree.
+
+Change analysis identifies the comparison meaning, start, target, and investigated scope.
+PR analysis also includes PR metadata. Commit, branch, and state comparisons do not require it.
+Each analysis includes a table of added, modified, and removed endpoints, followed by endpoint cards:
+
+- Added: the target state.
+- Modified: the target state and a table of changed conditions with previous and target evidence.
+- Removed: the previous state at the comparison start, with evidence of removal.
+
+Modified cards compare only changed inputs, permissions, responses, errors, or other behavior. They do not repeat the entire previous card.
+
+```text
+Analyze API changes on ../payments branch feature/refunds relative to main.
+Compare the API states at main and feature/refunds in ../payments.
+```
+
+The first request examines branch changes from the common ancestor. The second compares the two revision states directly.

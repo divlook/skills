@@ -1,6 +1,9 @@
 # Endpoint Reference Card Template
 
-Use the following fixed sections. Replace every placeholder with repository evidence or `Unknown`.
+Use the fixed sections below. Apply the evidence levels in [API Radar](../SKILL.md) to each field.
+Replace each value placeholder with repository evidence or `Unknown`.
+For source-supported absence, use `Source-supported — None` with a citation.
+For an inferred value, state the required assumption. For an unknown value, record the missing evidence under `Uncertainties`.
 
 ---
 
@@ -8,23 +11,25 @@ Use the following fixed sections. Replace every placeholder with repository evid
 
 ### {METHOD} {PATH}
 
-**Purpose**: {Observed | Inferred | Unknown} — {1-2 sentences describing the problem this endpoint solves or its usage scenario}
+**Revision**: {commitSHA | working tree}
 
-**Auth**: {Observed | Inferred | Unknown} — {authentication method and required permissions or conditions}
+**Purpose**: {Source-supported | Inferred | Unknown} — {purpose or usage scenario}
+
+**Auth**: {Source-supported | Inferred | Unknown} — {authentication method and permission conditions}
 
 **Request**
-- Path params: {Observed | Inferred | Unknown} — {name, type, requirement, and constraints}
-- Query params: {Observed | Inferred | Unknown} — {name, type, requirement, and constraints}
-- Headers: {Observed | Inferred | Unknown} — {name, format, and requirement}
-- Body: {Observed | Inferred | Unknown} — {fields, types, requirements, and constraints}
+- Path params: {Source-supported | Inferred | Unknown} — {names, types, requirements, and constraints}
+- Query params: {Source-supported | Inferred | Unknown} — {names, types, requirements, and constraints}
+- Headers: {Source-supported | Inferred | Unknown} — {names, formats, and requirements}
+- Body: {Source-supported | Inferred | Unknown} — {fields, types, requirements, and constraints}
 
 **Response**
-- Status: {Observed | Inferred | Unknown} — {status}
-- Content-Type: {Observed | Inferred | Unknown} — {media type}
-- Body: {Observed | Inferred | Unknown} — {schema or field summary}
+- Status: {Source-supported | Inferred | Unknown} — {status}
+- Content-Type: {Source-supported | Inferred | Unknown} — {media type}
+- Body: {Source-supported | Inferred | Unknown} — {schema or field summary}
 
 **Errors**
-- {Observed | Inferred | Unknown} — {status, code or message, and trigger condition}
+- {Source-supported | Inferred | Unknown} — {status, code or message, and trigger condition}
 
 #### Evidence
 
@@ -35,4 +40,4 @@ Cite every purpose, route, permission, schema, response, and error claim.
 
 #### Uncertainties
 
-- {None, or the unresolved item, why it is uncertain, and the files, search terms, or tests needed to resolve it}
+- {None, or unresolved item, reason, inspected evidence, and evidence still needed}
