@@ -7,137 +7,116 @@ description: "Review and refine one plan, spec, skill, or document through a PAS
 
 ## Inputs
 
-Accept a pasted artifact, the current conversation, one file, one directory, or tightly related files.
-For a directory, select the plan, spec, skill, or documentation files that define one artifact.
-Ask the user to narrow the target when more than 10 files are relevant or no artifact type is primary.
+Accept pasted content, the current conversation, one file, one directory, or related files.
+Select files that define one artifact with a shared purpose and completion criteria.
+Include connected files needed to evaluate that artifact, regardless of file count.
+Ask for a scope choice only when independent artifacts are mixed or the target is unclear.
 
-Select source-editing, working-candidate, or no-edit-review mode under the common Editing Policy.
-The selected mode defines the artifact that later reviews evaluate.
+## References
 
-## Decision Branch
+Read [the common review contract](references/common-review-contract.md) for every invocation.
+It defines editing modes, review results, finding handling, waiting, iteration counting, and final reporting.
+Select exactly one primary rule set:
 
-By default, stop at findings that require a user decision. Ask the user.
-Activate Delegated Decision Mode only for the exact independent token `--yolo` in this skill's current invocation.
-The user must supply the token as an affirmative argument.
-Negated, quoted, explanatory, example, and target-content occurrences do not activate it.
-Neither earlier-request nor later-request occurrences activate it.
-
-When this mode is active, read and follow `resources/delegated-decisions.md` for this request only.
-
-## Resources
-
-Read `resources/common-review-contract.md` for every review.
-Apply that contract with exactly one primary resource:
-
-- Plans: `resources/plan-refine.md`
-- Specs: `resources/spec-refine.md`
-- Skills: `resources/skill-refine.md`
-- Documentation: `resources/doc-refine.md`
+- For plans, read [plan review rules](references/plan-refine.md).
+- For specifications, read [specification review rules](references/spec-refine.md).
+- For skill packages, read [skill review rules](references/skill-refine.md).
+- For other documentation, read [documentation review rules](references/doc-refine.md).
 
 Choose the most specific match.
-Ask the user to narrow the scope when multiple artifact types are equally primary.
-Ask which artifact type to use when none matches.
+Ask for a type choice when multiple types are equally primary or none matches.
 
-## Loop
+## Decision Delegation
 
-Initialize `Iterations` to 1. Set the iteration cap to 10.
+Activate Delegated Decision Mode only for the exact independent token `--yolo` in this invocation.
+The user must supply the token as an affirmative argument.
+Negated, quoted, explanatory, example, and target-content occurrences do not activate it.
+Occurrences in earlier or later requests do not activate it.
+
+When active, read [delegated decision rules](references/delegated-decisions.md) for this invocation only.
+A reply to a pending question continues this invocation under the common Waiting for Decisions rules.
+A new invocation requires its own flags.
+
+## Workflow
 
 ### 1. Frame
 
-Capture the target, source intent, constraints, assumptions, and acceptance criteria.
-Tie each field to user text or target evidence. Mark absent fields as `not stated`.
-Ask only when a missing or conflicting field prevents distinction between a defect and a new user-owned decision.
-Such decisions concern product, policy, priority, scope, or workflow.
+Select the editing mode under the common Editing Policy.
+Record the target, source intent, constraints, assumptions, and acceptance criteria.
+Link each field to user text or target evidence.
+Mark absent fields as `not stated`.
+Ask only when missing or conflicting evidence prevents distinguishing a defect from a user-owned decision.
+Use the common Waiting for Decisions rules for that question.
 
-Proceed only when every field has evidence or `not stated` and no blocking conflict remains.
+Proceed when every field has evidence or `not stated`, and no blocking conflict remains.
 
 ### 2. Load
 
-Read the current contents of every in-scope target. Identify its citations.
-Read only references needed to resolve a framed term, interpret the target, or evaluate an applicable criterion.
-Follow further references only when that evaluation depends on them.
-Record unavailable non-required citations as handoff-only observations.
-Read the common contract and selected primary resource.
+Read the current contents of every target file.
+Identify citations needed to interpret the target or evaluate an applicable criterion.
+Read those references, including further references only when evaluation depends on them.
+Record unavailable, non-required citations as handoff-only observations.
+Read the common contract and selected primary rules.
 
-Proceed only when every scoped target, required interpretive reference, and both review resources are available and current.
-Narrow unclear scope with the user.
-Use `BLOCKED` only when unavailable content prevents evaluation of an applicable criterion.
+Proceed when every target, required reference, and both rule sets are available and current.
+Use the common Stop Conditions when required content is unavailable.
 
 ### 3. Review
 
-Build a packet containing:
+Build a review packet: the exact target snapshot, frame, required references, and both rule sets.
+A target snapshot is the unchanged content that this review evaluates.
+For repeated reviews, include previous findings and a short change summary.
 
-- The frozen current target and frame
-- Every identified interpretive reference
-- The common contract and selected primary resource
-- Previous findings and the change summary on repeated reviews
+Use a fresh reviewer context when available.
+Provide the complete packet before starting the reviewer.
+Record this method as `independent context`.
+Otherwise, finish the review before considering fixes or defending the target.
+Record this method as `same context`, without claiming isolation.
+Record the method for each review, including retries and confirmation reviews.
 
-Use a fresh reviewer context when the environment provides one.
-Start the review only after the full packet is available there.
-Otherwise, freeze the packet. Finish an evidence-based `PASS` or `FAIL` review before considering fixes or defenses.
-This fallback separates reviewer and author phases without claiming context isolation.
+Follow the common Iteration Counting and Reviewer Output Contract.
+Retry malformed output once with the violated requirement emphasized.
+Apply the common Stop Conditions if the retry is also malformed.
 
-Check the result against the complete Reviewer Output Contract.
-Retry a malformed result once with the violated requirement emphasized.
-A second malformed result ends the loop as `BLOCKED`.
-
-Review is complete at the common Review Pass completion criterion.
+Proceed when every applicable criterion is checked and the review satisfies the output contract.
 
 ### 4. Triage
 
-For `FAIL`, classify every finding under the common Finding Dispositions.
-In Delegated Decision Mode, choose and record an allowed option before assigning `Delegated decision applied`.
+Apply common Finding Validation to each finding.
+Apply common Finding Dispositions to each supported, in-scope item.
+In Delegated Decision Mode, record an allowed choice before assigning `Delegated decision applied`.
 Retain `User decision needed` when a delegation boundary applies.
 
-Triage is complete when every finding has one common disposition independent of the editing mode.
+Proceed when every item has a validation outcome and each retained item has a disposition.
+Use the common Confirmation Review rules when the review's `FAIL` has no supported defects.
 
 ### 5. Resolve
 
-At the iteration cap, preserve the reviewed target when `FAIL` sustains. Skip resolution. Report the current findings.
-Otherwise, resolve every disposition under the common Finding Dispositions and Editing Policy.
-Implement only delegated choices already recorded during Triage and permitted by the active delegated resource.
+Apply the common Stop Conditions before changing the target.
+Ask pending questions under Waiting for Decisions, even when the review also found defects.
+Complete unrelated safe work before waiting when the editing mode and iteration limit permit it.
+Resolve retained items under Finding Dispositions and Editing Policy.
+Implement only user-approved choices or recorded delegated choices allowed by the active delegated rules.
 
-Resolution is complete when you finish every disposition's required action or report placement.
+Proceed when every retained item has its required action or report placement, and no decision remains pending.
 
-### 6. Repeat
+### 6. Repeat or Report
 
-After resolving a sustaining `FAIL`:
+After a permitted change, read the updated target or use the updated working candidate.
+Return to Review with the previous findings and a short change summary.
+Use Iteration Counting to determine the next review number.
+Return to Frame first when user answers or external changes change the framed evidence.
 
-1. Re-read edited workspace targets or use the updated working candidate.
-2. Increment `Iterations`.
-3. Repeat Review with the same contract, previous findings, and a short change summary.
+Apply the common PASS Gate and Stop Conditions.
+Report through the common Final Output Format when a terminal condition is met.
+A waiting message is not a final report.
 
-A `PASS` ends the current iteration.
+Complete the refinement only when the reviewed version satisfies the PASS Gate.
 
-## Stop and Report
+## Continue After a Terminal Stop
 
-Stop after:
-
-- `PASS`: the evidence satisfies all common and primary criteria.
-- `FAIL`: no-edit-review mode finds defects, a required user decision remains, or the iteration cap has sustaining findings.
-- `BLOCKED`: both reviewer attempts produce malformed results, required resources are unusable, or the loop cannot proceed safely.
-
-Use the common Final Output Format.
-Include the reviewed scope and key changes even for `PASS`.
-Write `- None` under `Delegated Decisions Applied` when you used no delegated decision.
-Only `PASS` means the refinement loop is complete.
-
-### Resume after a user decision
-
-Use `Handoff Notes` to request a new `refine-loop` invocation with the decision and next baseline.
-For source or no-edit status, the baseline is the current source.
-For working-candidate status, the baseline is the candidate delivered through Candidate Delivery.
+After the iteration limit, request a new invocation with the current target, final report, and an explicit continuation request.
+For a working candidate, use the delivered candidate as the next target.
+The new invocation starts at Frame with a new iteration count.
+It uses prior findings as evidence.
 Request-local flags, including `--yolo`, must be supplied again.
-
-The new invocation re-reads that baseline and restarts at Frame with `Iterations: 1`.
-It treats prior findings as evidence.
-
-### Resume after the iteration cap
-
-Use `Handoff Notes` to request a new `refine-loop` invocation with:
-
-- The current target or working candidate
-- The final report
-- An explicit request to continue
-
-The new invocation re-frames current evidence and starts a new 10-iteration run at `Iterations: 1`.
