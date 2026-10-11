@@ -1,40 +1,55 @@
 # Auto Commit
 
-Auto Commit reviews the entire working tree, divides its changes into independently revertible groups, and commits every group immediately.
+Auto Commit commits current-session changes immediately. It separates clearly independent tasks and preserves other sessions' changes and staging.
 
 ## When to use it
 
-Use Auto Commit when you want the agent to:
+Use Auto Commit to commit work from the current session without another confirmation.
+It writes English Conventional Commit messages and does not edit file contents.
 
-- commit all staged, unstaged, and untracked changes
-- split unrelated changes into separate commits
-- regroup an existing staged snapshot by logical purpose
-- write Conventional Commit messages for each group
-
-## How to invoke it
-
-Ask the agent to commit the current changes or split them into commits. The skill is model-invoked, so no command syntax is required.
-
-Examples:
+The skill is model-invoked. Ask the agent to commit or split changes into commits.
 
 ```text
-Commit all current changes.
+Commit the changes made in this session.
 ```
 
+An explicit scope takes precedence. To include every session's changes, request the entire working tree:
+
 ```text
-Split the working tree into logical commits and commit them.
+Commit all staged, unstaged, and untracked changes in the entire working tree.
 ```
+
+To commit exactly the existing staged snapshot instead, use Stage to Commit.
 
 ## What it does
 
-Auto Commit:
+1. Uses session edit history and recorded content to identify authorized changes.
+2. Keeps related implementation, tests, types, configuration, and documentation together.
+3. Separates clearly independent tasks and chooses commit messages without a separate plan document.
+4. Checks the selected content and commits immediately.
+5. Reports created hashes and remaining changes.
 
-1. reads every staged, unstaged, and untracked change
-2. assigns every hunk to exactly one logical group
-3. orders dependent groups and writes an English Conventional Commit message for each
-4. stages and commits each planned group without waiting for another confirmation
-5. reports the resulting commit hashes and any changes left behind
+It does not start a separate code review or test run. Repository-required checks and commit hooks still apply.
 
-Invocation authorizes immediate commits. Auto Commit does not edit file contents. When changes were already staged, it clears only the Git index before rebuilding the planned groups. Working-tree content remains intact. Mixed files are split only when their hunk boundaries are clearly separable and each intermediate commit remains valid.
+## Shared work and staging
 
-A clean working tree produces a clean-state report without a commit. If a commit fails, Auto Commit stops before the next group. It reports the error and leaves the current index unchanged.
+A file changed by this session can also contain another session's edits. File names, timestamps, and staging do not establish ownership.
+Auto Commit selects only changes supported by the session's edit history. It stops if ownership or separation is uncertain.
+An agent with no retained edit history cannot reconstruct session ownership from Git alone.
+
+Existing staging is reused when it matches the next group. Other staged changes are not cleared.
+Partial-file commits and commits with other staged changes use a temporary Git index.
+After success, only committed paths are reconciled with the real index. Excluded staged changes remain staged, including those in shared files.
+The working-tree content remains unchanged by Auto Commit.
+
+## Stop conditions and limitations
+
+- No changes: report a clean working tree without a commit.
+- No authorized changes: report that result and leave other changes untouched.
+- Uncertain ownership, inseparable shared edits, or dependence on excluded uncommitted changes: stop before creating commits.
+- Unexpected HEAD, staged-content, or selected-file changes: stop rather than reclassify or include them.
+- Commit failure: report the error and current state without automatic edits or retries.
+
+Completed commits remain in place if a later step stops. Hooks can change files or staging even when they fail.
+Git does not provide one lock for this multi-command workflow. Detected concurrent changes cause a stop, but uninterrupted cross-session atomicity is not guaranteed.
+If a hook changes the temporary index or shared state unexpectedly, stop and report the actual commit and index state.

@@ -17,7 +17,7 @@ Use the format `type(scope): English subject`. Omit the scope when it adds no me
 | `ci` | Continuous integration configuration |
 | `chore` | Maintenance not covered by another type |
 
-If multiple types appear necessary, recheck the group boundary first. If the changes must stay together, use the type that represents the group's primary behavior.
+Use the type that represents the group's primary behavior. Multiple types do not require further splitting.
 
 ## Subject
 
@@ -36,7 +36,7 @@ build: update dependencies for TypeScript 6
 
 ## Body
 
-Use a body only when the subject cannot explain the entire group.
+Use a body only when a significant change or compatibility requirement needs more explanation.
 
 - Separate it from the subject with a blank line.
 - Use bullets for multiple changes.
@@ -47,4 +47,4 @@ For an incompatible change, add a final paragraph beginning with `BREAKING CHANG
 
 ## Completion Criterion
 
-Each message explains every hunk in its group without implying changes from another group.
+Each message states the group's main change accurately. It does not imply changes from another group or describe every hunk.

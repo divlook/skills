@@ -1,47 +1,24 @@
 # Change Grouping Criteria
 
-The goal is for each commit to describe one change and remain independently revertible.
+Use this reference when task boundaries or dependencies are unclear. Group only changes within the authorized scope.
 
-## Classification Order
+## Boundaries
 
-Classify each hunk in this order:
+- Keep implementation, tests, types, configuration, and documentation for one task together.
+- Keep required schemas, lockfiles, migrations, and generated artifacts with the changes that require them.
+- Separate clearly independent tasks. A shared directory or commit type does not make tasks related.
+- Prefer one coherent group when finer separation needs speculative analysis.
+- Keep overlapping changes from authorized tasks together when separation would break the result.
+- If a group requires excluded uncommitted changes, stop rather than expand the scope.
 
-1. **Behavior**: Implementation, tests, types, and documentation that complete the same user behavior or bug fix
-2. **Required relationship**: Configuration, schemas, and generated artifacts that must be applied together for the project to build or run
-3. **Transformation**: Renames, code moves, formatting, and dependency updates with no behavior change
-4. **Module**: A single-purpose change within one module when none of the relationships above apply
-
-Do not combine unrelated features merely because they share a type. Do not create groups based only on file count or directory.
-
-## Boundary Check
-
-Apply these questions to each candidate group:
-
-- Can one subject describe every hunk concretely?
-- Can this group be reverted without breaking another group?
-- Does it include every required test, type, lockfile, and migration?
-- If another group is a prerequisite, does the commit order express that dependency?
-
-If any answer is no, split the group again or merge the dependent changes into the same group.
-
-## Mixed Files
-
-If one file contains hunks with multiple purposes, list that file in the plan. List each purpose beside it.
-
-- If the hunk boundaries are clear, split them with `git add -p`.
-- If the purposes overlap on the same lines or syntax unit, commit the file as one unit.
-- If splitting would temporarily break the code, commit the changes together.
+For an ambiguous boundary, check whether one concrete subject describes the main change and whether the groups can be reverted independently.
+Merge dependent changes when separate commits would be invalid. Do not optimize every possible split.
 
 ## Order
 
-Place prerequisites first so the commit graph applies linearly:
-
-1. Configuration, schemas, and shared refactors directly used by later changes
-2. Features or bug fixes
-3. Documentation and follow-up cleanup that depend only on that behavior
-
-Prefer actual dependencies over a fixed order by type.
+Place actual prerequisites before their dependents. Do not impose a fixed order by commit type.
+Documentation and tests that complete a task belong with that task, not in automatic follow-up commits.
 
 ## Completion Criterion
 
-Complete grouping only when every hunk belongs to exactly one group. Explain every group's subject, revert boundary, and prerequisites.
+Every authorized change belongs to one coherent group. Each group has a concrete subject and no missing uncommitted prerequisite.
