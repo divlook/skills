@@ -76,6 +76,10 @@ Initialize `Iterations` to 0. Set the iteration cap to 10.
 ### 1. Frame
 
 Capture every input field. Establish one reviewable scope.
+Limit the scope to the reported defect and directly affected callers, tests, documentation, and configuration.
+Keep this scope and its acceptance criteria fixed across review cycles.
+Include another path only when evidence shows the fix requires it or caused a regression there.
+Apply Decision Mode before changing expected behavior. The `--yolo` token does not authorize unrelated improvements.
 
 Proceed only when:
 
@@ -101,17 +105,29 @@ Report `BLOCKED` when neither reproduction nor a supported failing path is avail
 
 Apply the smallest change that fixes the root cause and preserves behavior outside the framed scope.
 Follow Decision Mode before implementing a user-owned choice.
+Measure the minimum by required behavior, not changed line count.
+Inspect directly connected modules and functions for an existing implementation before adding equivalent logic.
+Reuse it when its behavior and constraints fit the fix. Explain any necessary separate implementation.
+Check that affected callers, tests, documentation, and configuration agree with the repaired behavior.
+Remove unnecessary elements introduced by this change and existing elements made obsolete by the fix.
+Leave unrelated pre-existing duplication and cleanup outside the loop.
 
 Proceed only when:
 
 - You changed the root-cause path.
 - Every touched line serves the fix.
 - No known caller or affected behavior remains on the obsolete path.
+- Existing implementation reuse and directly affected contract consistency are accounted for.
+- No change-created or fix-obsoleted unnecessary element remains.
 
 ### 4. Verify
 
 Repeat the reproduction or strongest available check that exercises the repaired path.
 Run additional targeted checks proportional to the regression risk.
+Tie each additional check to a directly affected behavior or an evidence-backed risk.
+Permanent test additions are not a completion criterion.
+Use a temporary scenario when sufficient.
+Retain a regression test when it protects an observable failure or uncertain boundary.
 Record commands or scenarios, results, unavailable checks, and residual risk.
 Repeat this step after every later code change.
 
@@ -161,6 +177,7 @@ Run Review with the updated packet.
 
 Proceed only when the targets and verification are current and the review result is valid.
 For `PASS`, proceed to Stop and Report. For `FAIL`, return to Triage and Resolve.
+Stop at a valid `PASS`. Do not start another cycle to seek optional improvements.
 
 ## Stop and Report
 
