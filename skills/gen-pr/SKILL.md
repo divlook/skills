@@ -6,13 +6,15 @@ argument-hint: "[current > target] [--create]"
 
 # Gen PR
 
-Produce one PR draft per invocation. An independent `--create` token in the current invocation enables create mode. Without it, use draft mode. Strip the token first. Parse the remaining input for the source and target branches.
+Produce one PR draft per invocation. An independent `--create` token in the current invocation enables create mode.
+Without it, use draft mode. Strip the token first. Parse the remaining input for the source and target branches.
 
 ## Guardrails
 
-- Keep analysis read-only: inspect existing refs without fetching, pulling, or checking out branches. Repository writes require the separate preparation approval in Step 2.
-- Authorize one `gh pr create` with `--create` or the `create-pr` selection after the draft. Require separate approval for one `gh pr edit` of an existing PR.
-- Ground every claim in the title and body in the diff, commits, or project PR template.
+- Keep analysis read-only. Require separate approval for commits, pushes, and target fetches. Do not pull or check out branches.
+- Authorize one `gh pr create` with `--create` or the `create-pr` selection after the draft.
+- Require separate approval for one `gh pr edit` of an existing PR.
+- Describe committed changes only. A project template defines format, not evidence that a change or check occurred.
 - Pass branch names and generated text as separate, correctly shell-escaped arguments. Do not compose generated text into shell syntax.
 
 ## Workflow
@@ -33,7 +35,22 @@ When the request omits the target, discover the remote default branch:
 git symbolic-ref --short refs/remotes/origin/HEAD
 ```
 
-For example, when the result is `origin/main`, use `main` as the PR target and `origin/main` as the comparison ref. Ask for the target only when the default branch cannot be discovered. When the user supplies a target, first use that name as the comparison ref. If it does not exist, try `origin/<target>`.
+Ask for the target only when the default branch cannot be discovered.
+
+Keep these values distinct:
+
+- **PR target:** The destination branch name on GitHub, such as `main`.
+- **Comparison ref:** The Git ref used to calculate changes, normally `refs/remotes/origin/<target>`.
+- **Analysis snapshot:** The source commit ID, comparison commit ID, and complete diff between them.
+
+For `origin/main`, set the PR target to `main`. Use `refs/remotes/origin/main` as the comparison ref.
+Use the same remote comparison rule when the user supplies `main`. Do not substitute the local `main` branch.
+
+Use a local comparison ref only when the user explicitly requests local branch comparison in draft mode.
+Label that output as a local comparison draft.
+In create mode, use the remote comparison and explain any switch from a local comparison request.
+Read Section 1 of the [PR Creation Procedure](references/pr-creation.md) before checking for an empty committed diff.
+Apply that section only in create mode. Initial target resolution returns here before Step 2.
 
 Check that the source and comparison ref each resolve to a commit:
 
@@ -41,36 +58,52 @@ Check that the source and comparison ref each resolve to a commit:
 git rev-parse --verify --end-of-options "<ref>^{commit}"
 ```
 
-On failure, identify the invalid ref and ask only for that branch again. Complete this step when both refs resolve. Identify the PR target and comparison ref separately.
+On source failure, identify the invalid ref and ask only for the source again.
+If the remote comparison ref is missing in draft mode, report its exact name.
+Draft mode makes no remote query or automatic fetch.
+Ask for a different target or for the missing ref to be prepared before resuming.
+Do not fall back to a local target.
+For an invalid explicit local comparison ref, ask only for that ref again.
 
-### 2. Check commit and push readiness
+Complete this step when both refs resolve and the comparison mode is identified.
 
-Inspect the working tree when the source is the current branch, and compare the source commit with the remote branch:
+### 2. Resolve uncommitted source changes
+
+Inspect the working tree only when the source is the current branch:
 
 ```bash
 git status --short --untracked-files=all
-git rev-parse --verify --end-of-options "<source>^{commit}"
-git ls-remote --heads origin "refs/heads/<source>"
+```
+
+Inspect the committed diff for every source:
+
+```bash
 git diff "<comparison>...<source>" --name-status
 ```
 
-Treat staged, unstaged, and untracked files as uncommitted changes. Changes on a different checked-out branch are outside the requested source. An empty branch diff means there are no committed changes to describe. Uncommitted changes can still exist. An absent remote branch or a different remote commit means the source is not published at its local commit. If the remote query fails, report push readiness as unknown rather than assuming it is ready or unpushed.
+Treat staged, unstaged, and untracked files as uncommitted changes.
+Changes on another checked-out branch are outside the requested source.
+An empty branch diff means there are no committed changes to describe. Uncommitted changes can still exist.
 
-If the branch diff is empty and no uncommitted source changes exist, output `No changes` with the compared refs. Stop.
+If the committed diff is empty and no uncommitted source changes exist, output `No changes` with the compared refs.
+Stop without producing a draft.
 
-If source changes are uncommitted, the source is unpublished, or push readiness is unknown, explain the observed state. Ask how to continue:
+If source changes are uncommitted, explain the observed state. Ask whether to include them before writing the draft:
 
-- **Prepare and continue:** Ask for approval for the specific missing work. Specify commits of intended source changes, a source push, or both. Draft mode needs a commit only when the user wants uncommitted changes included. Publishing is needed for PR creation, not for drafting.
-- **Use existing commits:** Offer this only when the branch diff is nonempty. State that the draft excludes uncommitted changes. If publishing is still needed, continue in draft mode and defer PR creation.
+- **Use existing commits:** Offer this only when the committed diff is nonempty. State that the draft excludes uncommitted changes.
+- **Commit selected changes and include them:** Identify the intended changes and exact commit scope. Request explicit approval for that scope before committing. This selection does not authorize every uncommitted change or a push.
 - **Stop:** End at the user's request.
 
-Honor the user's choice for the inspected state. Ask again only if that state changes or a later creation request requires publishing.
+Honor the user's choice while the inspected changes remain unchanged. Ask again if those changes change.
+After commit approval, follow the repository's existing commit workflow. This skill defines no commit grouping or message rules.
+Commit only the approved changes. Recheck status and the committed diff after preparation.
+Treat previously inspected, unselected changes as excluded unless they changed.
+Approved commits resolve the selected changes without another inclusion question.
+If preparation fails, report the actual command error or missing capability.
+Ask the user to complete the approved work before resuming.
 
-`--create` and `create-pr` authorize PR creation, not commits or pushes. After preparation approval, use the repository's existing commit workflow and instructions. This skill defines no commit grouping or message rules. Perform only the approved preparation. Rerun the readiness checks before analyzing the snapshot.
-
-If you cannot execute preparation, identify the actual missing capability or command error. Ask the user to complete that work. Resume after it is ready.
-
-Complete this step when a nonempty committed snapshot is available and the user resolves every preparation choice. Drafting may proceed without a matching remote branch. PR creation requires the remote source commit to match the analyzed local commit.
+Without uncommitted source changes, proceed without a preparation question. Draft mode does not query remote publication status.
+Complete this step when a nonempty committed diff exists and every applicable inclusion choice is resolved.
 
 ### 3. Resolve the PR template
 
@@ -83,46 +116,53 @@ Use `read` to check these files in order and use the first one that exists:
 5. `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md`
 6. `docs/pull_request_template.md`
 
-If none exists, search file paths once for `pull_request_template`. Use the sole candidate when exactly one exists. When multiple distinct candidates exist and their names do not identify the applicable one, ask the user to choose. When no candidate exists, use the default template in the [PR Writing Contract](references/pr-writing-guidelines.md).
+If none exists, search file paths once for `pull_request_template`.
+Use the sole candidate when exactly one exists.
+Ask the user to choose when multiple distinct candidates exist and their names do not identify the applicable one.
+With no candidate, use the default template in the [PR Writing Contract](references/pr-writing-guidelines.md).
 
-Complete this step only when you select one project template or the default template.
+Complete this step when you select one project template or the default template.
 
 ### 4. Describe the change snapshot
 
-Collect these four results:
+Resolve both refs to commit IDs before collecting evidence:
 
 ```bash
-git log "<comparison>..<source>" --format='%h %s' --no-merges
-git diff "<comparison>...<source>" --stat
-git diff "<comparison>...<source>" --name-status
-git diff "<comparison>...<source>"
+git rev-parse --verify --end-of-options "<source>^{commit}"
+git rev-parse --verify --end-of-options "<comparison>^{commit}"
 ```
 
-If a command fails, return its error and do not produce a draft. If name-status is empty, output `No changes` with the two compared refs and stop.
-
-If the full diff is truncated, read every missing path from name-status with the following command. Escape each path exactly.
+Record these as `source_commit` and `comparison_commit`. Use those fixed IDs for every command in this step:
 
 ```bash
-git diff "<comparison>...<source>" -- "<path>"
+git log "<comparison_commit>..<source_commit>" --format='%h %s' --no-merges
+git diff "<comparison_commit>...<source_commit>" --stat
+git diff "<comparison_commit>...<source_commit>" --name-status
+git diff "<comparison_commit>...<source_commit>"
 ```
 
-Classify every changed path as added, modified, deleted, renamed, binary, or submodule. Record significant function, class, component, configuration, and documentation changes. Commit messages may help interpret the diff but cannot support a claim that conflicts with it.
+If a command fails, return its error and do not produce a draft.
+If name-status is empty, output `No changes` with the compared refs and stop.
 
-Complete this step only when you account for every changed path and significant hunk. Describe each or explicitly classify it as insignificant. Retain the complete diff as the analysis snapshot.
+If the full diff is truncated, read every missing path from name-status with this command. Escape each path exactly.
+
+```bash
+git diff "<comparison_commit>...<source_commit>" -- "<path>"
+```
+
+Classify every changed path as added, modified, deleted, renamed, binary, or submodule.
+Record significant function, class, component, configuration, and documentation changes.
+Commit messages may help interpret the diff but cannot support a claim that conflicts with it.
+Account for every changed path and significant hunk. Describe each or explicitly classify it as insignificant.
+Retain both commit IDs and the complete diff as the analysis snapshot.
+
+Complete this step when every path is accounted for and all evidence uses the recorded IDs.
 
 ### 5. Write the title and body
 
 Read and apply the complete [PR Writing Contract](references/pr-writing-guidelines.md).
-
-When using a project template, preserve its structure, fixed text, instructions, and checklists. Fill only placeholders supported by evidence, and leave unverified checkboxes unchecked. When using the default template, omit unnecessary sections according to the contract.
-
-Produce one final title and one concise, complete body. Select the title internally. Output only that selection. Candidate lists and alternative titles are invalid output. Completion criteria:
-
-- The analysis snapshot supports every concrete claim in the title and body.
-- The fewest non-duplicative sentences or bullets cover every significant change.
-- No speculation, duplication, empty placeholder, or optional section without reviewer value remains.
-- The required structure of the project template remains intact.
-- The title and body satisfy every title, style, and length rule in the contract.
+Produce one title and one body from the analysis snapshot.
+Complete this step when the draft satisfies the contract's completion criteria.
 
 ### 6. Deliver the draft or write the PR
 
@@ -147,49 +187,12 @@ Next action:
 - `stop`: Finish without creating a PR
 ````
 
-For `edit-draft`, apply the requested changes. Recheck the Step 5 completion criteria. Show the full title and body. For `create-pr`, continue to the creation procedure below. For `stop`, end without writing a PR.
+State when uncommitted changes were excluded. Identify local comparison drafts.
+For remote comparison drafts, state that the local remote-tracking ref's freshness was not checked.
+For `edit-draft`, apply the requested changes and repeat the Step 5 contract check. Show the full title and body.
+For `create-pr`, follow the creation procedure below. For `stop`, end without writing a PR.
 
 #### Creation procedure
 
-Recheck Step 2 readiness before creation, including when the user selects `create-pr` after a draft. If preparation is necessary, request its separate approval. Complete approved preparation first. Rerun the complete diff from Step 4 and compare it with the analysis snapshot. If it changed, repeat Steps 4 and 5 with the new snapshot.
-
-List open PRs with the same source and target:
-
-```bash
-gh pr list --head "<source>" --base "<target>" --state open --json url,title,body,baseRefName,headRefName
-```
-
-If the lookup fails, return the error instead of guessing whether a PR exists. If it returns an empty array, create the PR and retain the returned URL:
-
-```bash
-gh pr create --base "<target>" --head "<source>" --title "<title>" --body "<body>"
-```
-
-If one PR exists, show its URL and the new draft. Ask for approval to update it. If multiple PRs exist, ask the user to select one. After approval, edit the selected PR explicitly:
-
-```bash
-gh pr edit "<PR URL>" --title "<title>" --body "<body>"
-```
-
-After creating or editing, run `gh pr view` with the retained URL. Success requires a present URL. The title, body, baseRefName, and headRefName values must exactly match the resolved values. On success, output only the URL and title.
-
-Complete delivery only when the full draft meets Step 5 or the retained PR values exactly match the resolved values.
-
-If a command fails or verification differs, do not claim success. Return the error, generated title and body, and the correctly escaped command for manual execution.
-
-## Git and PR command reference
-
-- `git branch --show-current`
-- `git symbolic-ref --short refs/remotes/origin/HEAD`
-- `git rev-parse --verify --end-of-options "<ref>^{commit}"`
-- `git status --short --untracked-files=all`
-- `git ls-remote --heads origin "refs/heads/<source>"`
-- `git log "<comparison>..<source>" --format='%h %s' --no-merges`
-- `git diff "<comparison>...<source>" --stat`
-- `git diff "<comparison>...<source>" --name-status`
-- `git diff "<comparison>...<source>"`
-- `git diff "<comparison>...<source>" -- "<path>"`
-- `gh pr list --head "<source>" --base "<target>" --state open --json url,title,body,baseRefName,headRefName`
-- `gh pr create --base "<target>" --head "<source>" --title "<title>" --body "<body>"`
-- `gh pr edit "<PR URL>" --title "<title>" --body "<body>"`
-- `gh pr view "<PR URL>" --json url,title,body,baseRefName,headRefName`
+For `--create` or `create-pr`, read and follow the complete [PR Creation Procedure](references/pr-creation.md).
+Complete delivery when the full draft meets Step 5 or the creation procedure verifies the retained PR.
