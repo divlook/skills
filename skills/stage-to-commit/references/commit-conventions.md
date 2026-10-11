@@ -4,8 +4,10 @@ Apply every rule below when choosing a message for `stage-to-commit`.
 
 ## Message contract
 
-Describe the staged snapshot's observable changes. Ground every title, body line, issue reference, and breaking-change claim in the diff.
-Infer nothing from unstaged files or intent.
+Describe the staged snapshot's significant observable changes.
+Ground every title, body line, issue reference, and breaking-change claim in the staged diff.
+Use only staged evidence, not unstaged content or assumed intent.
+Read every staged change, but do not list every hunk or incidental cleanup in the message.
 
 Use:
 
@@ -43,13 +45,13 @@ secondary changes in the body.
 ## Scope
 
 Add a short scope only when it identifies a meaningful subsystem or component.
-Follow scopes in the recent commit log. Omit it for repository-wide changes or
-when it merely repeats the subject.
+Follow repository scope rules first, then scopes in the recent commit log.
+Omit the scope for repository-wide changes or when it merely repeats the subject.
 
 ## Subject
 
 - State the concrete change, not a vague benefit or intent.
-- Match the recent commit log's Korean or English style.
+- Follow repository language rules first, then the recent commit log's language.
 - Keep the type lowercase.
 - Use imperative mood for English.
 - End without a period.
@@ -65,8 +67,8 @@ Examples:
 
 ## Body
 
-Add a body only when the title cannot represent every significant staged
-change or a necessary reason is visible in the diff.
+Add a body for significant changes the title does not describe.
+Also add a body when the staged diff shows a necessary reason.
 
 - Separate it from the title with a blank line.
 - Use bullets for multiple independent changes.
