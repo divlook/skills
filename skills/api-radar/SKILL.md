@@ -7,7 +7,7 @@ description: "Maps and documents REST API endpoints from a local project or GitH
 
 Trace REST endpoints from each route to its observable behavior. Produce evidence-backed Endpoint Reference Cards.
 
-Treat the source as immutable. Read files and repository metadata. Search code and history. Inspect diffs, commits, branches, and pull requests.
+Read files and repository metadata. Search code and history. Inspect diffs, commits, branches, and pull requests.
 
 Keep the working tree, index, branches, remotes, authentication, and repository files unchanged. For GitHub, use only read operations. Generate analysis in chat. Never call the application API.
 
@@ -37,24 +37,31 @@ Resolve the source in this order:
 3. `owner/repo` is remote only when it is not an existing path.
 4. With no explicit source, use the current working directory and treat the full request as the query.
 
-The environment is the source registry. Ask for a source only when neither the request nor the current working directory identifies a searchable project.
+Ask for a source only when neither the request nor the current working directory identifies a searchable project.
 
-Read [Source Access](references/source-access.md) after you resolve a local or GitHub source. Use its matching source branch. Keep one source path for the request.
+Read [Source Access](references/source-access.md) after you resolve a local or GitHub source. Use its matching access branch.
+Use the same source repository throughout the analysis.
 
 Complete input resolution only when you have a searchable source, query, and matching access branch.
 
 ## Workflow
 
-### 1. Establish the Snapshot
+### 1. Establish the Analysis Revisions
 
-Resolve the source, requested revision or comparison, and immutable evidence revision:
+Resolve the requested revision or comparison:
 
-- Local working tree: record `working tree` and the current commit SHA when available.
-- Local commit or branch: resolve it to a commit SHA.
-- GitHub repository or branch: resolve the selected ref to a commit SHA.
-- Pull request: record its base, head, metadata, changed files, and diff.
+- Working tree: include uncommitted files. Record `working tree` and the current commit SHA when available.
+- Commit or branch: resolve the selected ref to a commit SHA.
+- GitHub repository without a requested ref: resolve its default branch to a commit SHA.
+- Change analysis: establish the comparison start and target under [Source Access](references/source-access.md).
 
-This step is complete when every later file read can be attributed to one source and revision. If a requested ref is ambiguous or absent, ask for that ref rather than silently using the default branch.
+Read committed evidence at the resolved SHAs. Use search results only to discover candidates. Confirm each candidate at the analysis revision.
+The working tree is mutable, not an immutable snapshot. If you detect a file change during analysis, read the affected evidence again.
+Label its citations as `working tree`, not as committed content.
+
+If a requested ref is ambiguous or absent, ask for that ref. Keep the requested revision instead of substituting the default branch.
+Complete this step when each file read has an identified analysis revision or the `working tree` label.
+For changes, also record both comparison SHAs and the comparison meaning.
 
 ### 2. Profile the Project
 
@@ -64,9 +71,11 @@ Find the backend boundary before searching broadly:
 2. Identify services in a monorepo.
 3. Find routing, schema, authentication, and exception-handling conventions.
 
-Use [references/framework-detection.md](references/framework-detection.md) for framework-specific routing hints.
+After identifying a supported framework, read its routing hints in [Framework Routing Hints](references/framework-detection.md).
 
-Complete this step when you identify likely route-definition locations and the framework convention. Otherwise, record every attempted location and the remaining uncertainty. An unknown framework does not stop the analysis.
+Record the services, route-definition locations, and framework conventions you inspect. Record unresolved routing boundaries under `Uncertainties`.
+An unknown framework does not stop the analysis.
+Complete this step when the investigated scope and unresolved boundaries are explicit.
 
 ### 3. Find Endpoint Candidates
 
@@ -77,11 +86,16 @@ Search in widening passes:
 3. Translated or domain terms when the query is descriptive.
 4. Handler, controller, service, schema, test, and generated API-spec references.
 
-For pull requests and comparisons, inspect directly changed routes. Inspect indirect API changes caused by schemas, permissions, serializers, middleware, or error handlers. Trace added and modified endpoints at the target revision. Trace removed endpoints at the base revision.
+For changes, inspect directly changed routes. Inspect indirect API changes through schemas, permissions, serializers, middleware, and error handlers.
+Trace added and modified endpoints at the comparison target. Trace removed endpoints at the comparison start.
+Use the same comparison start for the change list and previous behavior.
 
-When a broad query produces several plausible endpoints, return a compact candidate table. Include method, path, purpose, and evidence. Ask which candidate to trace. When the request clearly asks for a complete inventory or change analysis, trace every matching endpoint instead.
+When a broad query produces several plausible endpoints, return a compact candidate table. Include method, path, purpose, and evidence.
+Ask which candidate to trace. For an inventory or change analysis, trace every matching endpoint in the requested scope instead.
 
-This step is complete when every plausible match is either selected for tracing or listed with evidence.
+Complete this step when you select, list for user selection, or exclude each discovered candidate with a reason.
+Record uninvestigated services, dynamic routing, and unresolved indirect effects under `Uncertainties`.
+Keep the requested scope. Label incomplete coverage as partial analysis rather than presenting a subset as a complete inventory.
 
 ### 4. Trace Observable Behavior
 
@@ -94,29 +108,34 @@ For each selected endpoint, follow actual symbols and composition from the route
 - authentication and permission conditions
 - handler and service behavior needed to explain the endpoint
 - response schema, status, and content type
-- exception mapping and observed error body
+- exception mapping and error body
 
 Distinguish evidence levels:
 
-- **Observed**: directly supported by source or diff.
-- **Inferred**: follows from composition but is not explicit in the inspected source.
-- **Unknown**: You found no evidence after checking the relevant route, shared middleware, schema, tests, and handlers.
+- **Source-supported**: explicit source or diff supports the claim. This includes composition with traceable source connections, such as mounted paths.
+- **Inferred**: the claim requires an assumption about execution, the environment, or an external system. State the assumption.
+- **Unknown**: the inspected evidence does not establish the value. Record the searches and relevant files inspected.
 
+Cite each source connection needed for a composed claim. These levels describe repository evidence, not results from live requests.
+Use `Source-supported — None` only when evidence establishes absence. Missing evidence means `Unknown`, not `None`.
 Report framework defaults as unknown unless repository evidence supports them. Omit secrets and user data found in source.
 
-Complete this step only when you classify every output field as observed, explicitly inferred, or unknown with search evidence.
+Complete this step when every output field has an evidence level, supporting citations, or an explanation of missing evidence.
 
 ### 5. Produce the Result
 
 Use:
 
-- [references/endpoint-card-template.md](references/endpoint-card-template.md) for endpoint analysis
-- [references/pr-analysis-template.md](references/pr-analysis-template.md) for pull request analysis
+- [Endpoint Reference Card Template](references/endpoint-card-template.md) for endpoint analysis
+- [Change Analysis Template](references/pr-analysis-template.md) for pull request, commit, branch, or revision comparisons
 
 Apply the citation formats in [Endpoint Reference Card Template](references/endpoint-card-template.md) to every evidence claim.
+Identify the investigated services, routing locations, and analysis revisions before the cards.
 
 Complete the result only when all these conditions apply:
 
 - Every selected or changed endpoint has a card.
 - Every route, permission, schema, response, and error claim has a citation.
 - Every unresolved point appears under `Uncertainties`.
+- Change analysis shows previous and target evidence for each changed condition.
+- You label incomplete coverage as `Partial analysis` with the missing scope.
