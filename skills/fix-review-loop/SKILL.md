@@ -1,6 +1,6 @@
 ---
 name: fix-review-loop
-description: "Fix one code defect through reproduction, repair, verification, and independent PASS/FAIL review."
+description: "Fix one code defect through reproduction, repair, execution verification, and PASS/FAIL review. Report independent review or self-review explicitly."
 ---
 
 # Fix Review Loop
@@ -34,7 +34,10 @@ The user owns decisions that substantially change:
 - Persistence or migration policy
 - Error policy or external integrations
 
-By default, stop before implementing such a decision. Ask the user.
+By default, pause changes that depend on such a decision. Ask the user.
+Continue independent repairs and checks only when evidence establishes their correctness without that decision.
+Pause inseparable changes together.
+
 Activate Delegated Decision Mode only for the exact independent token `--yolo` in this skill's current invocation.
 The user must supply the token as an affirmative argument.
 Negated, quoted, explanatory, example, and target-content occurrences do not activate it.
@@ -71,7 +74,7 @@ If the required resource is missing or unusable, bypass its format. Report both 
 ## Loop
 
 Initialize `Iterations` to 0. Set the iteration cap to 10.
-`Iterations` counts independent review cycles entered.
+`Iterations` counts review cycles entered, including self-review cycles.
 
 ### 1. Frame
 
@@ -89,7 +92,8 @@ Proceed only when:
 
 ### 2. Reproduce and Diagnose
 
-Run the narrowest available reproduction before editing.
+Use the user's reported failure as evidence without rerunning it merely to confirm the report.
+Otherwise, run the narrowest available reproduction before editing.
 If direct reproduction is infeasible, trace the most specific supported failing path.
 Use code, tests, logs, errors, or user evidence.
 
@@ -114,15 +118,18 @@ Leave unrelated pre-existing duplication and cleanup outside the loop.
 
 Proceed only when:
 
-- You changed the root-cause path.
+- Completed repairs address the root-cause path. Only decision-dependent repairs may remain paused.
 - Every touched line serves the fix.
-- No known caller or affected behavior remains on the obsolete path.
-- Existing implementation reuse and directly affected contract consistency are accounted for.
+- No caller or affected behavior of a completed repair remains on its obsolete path.
+- You accounted for existing implementation reuse and consistency of directly affected contracts.
 - No change-created or fix-obsoleted unnecessary element remains.
 
 ### 4. Verify
 
-Repeat the reproduction or strongest available check that exercises the repaired path.
+Run the reproduction or a temporary execution scenario that exercises the repaired path.
+Code and log tracing can support diagnosis, but cannot replace execution verification.
+If execution is unavailable, finish safe repairs and available static checks.
+Then report `BLOCKED` with the exact missing environment or input.
 Run additional targeted checks proportional to the regression risk.
 Tie each additional check to a directly affected behavior or an evidence-backed risk.
 Permanent test additions are not a completion criterion.
@@ -133,7 +140,7 @@ Repeat this step after every later code change.
 
 Proceed only when:
 
-- Current evidence exercises the repaired path.
+- Current execution evidence demonstrates the expected behavior on the repaired path.
 - Proportional regression checks ran, or each unavailable check has a recorded reason.
 - You recorded all results and residual risks.
 
@@ -142,53 +149,64 @@ Proceed only when:
 Bring the change into compliance with the contract's `Scope and Quality` criteria.
 Build the complete packet from its `Review Packet` section.
 
-Use a fresh reviewer context when the environment provides one.
-Otherwise, freeze the complete packet. Finish a review-only pass before returning to author work.
-This fallback separates reviewer and author phases without claiming context isolation.
-An ordinary author self-check does not qualify.
+Use a fresh reviewer context when available. Record this method as `independent review`.
+Otherwise, freeze the complete packet and perform a review-only pass in the author's context.
+Record this method as `self-review`, not independent review.
+Finish the review-only pass before resuming author work.
+An ordinary author check does not qualify as this structured self-review.
 
 Increment `Iterations` once for the cycle. Run the review.
-Check the result against the Reviewer Output Contract.
-For a malformed result, retry once with the violated output requirement emphasized.
+Validate each finding under the contract's `Finding Validation` section.
+Keep supported findings even when the result also contains excluded findings.
+Check the verdict, required fields, and criterion coverage against the Reviewer Output Contract.
+For an uninterpretable or incomplete result, retry once with the violated requirement emphasized.
 Keep the retry in the same cycle without incrementing `Iterations`.
-Report `BLOCKED` after a second malformed result.
+Report `BLOCKED` if the retry still fails that requirement.
 
 Proceed only when:
 
 - The packet includes every required item, including repeated-review fields when applicable.
 - You incremented `Iterations` exactly once for the cycle.
-- You used the specified fresh-context or frozen-packet method.
+- You recorded the actual review method and used its required procedure.
 - The result satisfies the Reviewer Output Contract and evaluates every review criterion.
 
-### 6. Triage and Resolve
+### 6. Resolve and Repeat
 
-For `FAIL`, classify and handle every finding under the contract's `Finding Dispositions`.
-A sustaining `FAIL` has directly actionable findings without an unresolved user decision or hard boundary.
+Record every finding's validation result, including the reason for each exclusion.
+Classify supported findings under the contract's `Finding Dispositions`.
+Apply its required actions and report placement.
 
-At review 10, classify and report sustaining findings. Stop as `FAIL` before applying further changes.
-This stop prevents an unreviewed fix from appearing complete.
+At review 10, classify remaining findings without applying further changes.
+This limit prevents an unreviewed repair from appearing complete.
+Before that limit, resolve directly actionable findings that do not depend on an unresolved user decision.
+After every change, re-read changed targets and repeat Verify.
+Return to Review with the updated packet.
 
-Resolution is complete when every finding has exactly one disposition and you finish its required action or report placement.
+When only decision-dependent work remains, report `NEEDS_DECISION` unless a blocker requires `BLOCKED`.
+When you exclude every finding, check criterion coverage rather than automatically converting `FAIL` to `PASS`.
+Use Review's retry rule if the result does not support a verdict covering every applicable criterion.
+Stop at a valid `PASS`. Do not start another cycle for optional improvements.
 
-### 7. Repeat
+Resolution is complete only when:
 
-After resolving a sustaining `FAIL`, re-read changed targets. Repeat verification.
-Run Review with the updated packet.
-
-Proceed only when the targets and verification are current and the review result is valid.
-For `PASS`, proceed to Stop and Report. For `FAIL`, return to Triage and Resolve.
-Stop at a valid `PASS`. Do not start another cycle to seek optional improvements.
+- Every finding has a validation result and every supported finding has exactly one disposition.
+- You verified and reviewed every permitted action, or a stopping condition prevents further work.
+- The report distinguishes remaining decisions, actionable findings, blockers, and excluded findings.
 
 ## Stop and Report
 
 Use the contract's Final Output Format.
 
-- `PASS`: the evidence satisfies every review criterion.
-- `FAIL`: a non-hard-boundary user decision remains in default mode, or review 10 has sustaining findings.
+- `PASS`: execution evidence and a valid review satisfy every applicable criterion.
+- `FAIL`: directly actionable findings remain at review 10.
+- `NEEDS_DECISION`: a user-owned decision remains after Resolve and Repeat completes permitted independent work or reaches the review limit.
 - `BLOCKED`: a hard boundary, unusable required resource, or conflicting change prevents progress.
 - Also report `BLOCKED` when unavailable non-decisional factual evidence cannot support a safe fix.
-- Also report `BLOCKED` when both attempts at one review produce malformed results.
+- Also report `BLOCKED` when execution verification is unavailable.
+- Also report `BLOCKED` when both attempts at one review are uninterpretable or incomplete.
 
-Unresolved user-owned choices are `FAIL` unless they cross a hard boundary.
-`BLOCKED` takes precedence.
+Use this precedence: `BLOCKED`, `NEEDS_DECISION`, `FAIL`, then `PASS`.
+Report every remaining reason even when another status takes precedence.
+Report the actual review method separately from the final status.
+Use `not performed` when the loop stops before Review.
 Only `PASS` means the fix-review loop is complete.
