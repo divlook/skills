@@ -6,104 +6,121 @@ disable-model-invocation: true
 
 # Stage to Commit
 
-Invocation authorizes one immediate commit of exactly the staged snapshot.
+Invocation authorizes one immediate commit of the analyzed staged snapshot.
 
-## Guardrails
+The **index** is Git's staging area.
+The **staged snapshot** is the recorded content selected for this commit.
+The **baseline HEAD** is the commit that must become its sole parent.
+A repository without commits has no baseline parent.
 
-Use only these Git operations:
+## Safety boundaries
 
-- `git status --short`
-- `git diff --cached --stat`
-- `git diff --cached`
-- `git log -10 --format=%s`
-- `git commit -m`
-- `git log -1 --format='%h %s'`
+Use read-only Git commands to inspect state and commits.
+The only authorized command that changes repository state is one `git commit -m` invocation.
+Leave file contents and staging unchanged yourself.
+Follow repository-required checks and hooks without bypassing them.
 
-Treat the index and working tree as read-only. The sole write is the authorized
-commit. Commit only the snapshot revalidated below.
+Hooks can change files or the index, including when a commit fails.
+Git locks protect individual commands, not this entire workflow.
+The checks below detect observed changes. They do not guarantee an atomic snapshot across concurrent sessions.
+Stop on command errors or detected changes. Do not retry, amend, reset, or automatically undo a commit.
 
-## Workflow
+## Procedure
 
-### 1. Establish a non-empty stage
+### 1. Record a non-empty snapshot
 
-Run `git diff --cached --stat`.
+Run `git rev-parse --verify --quiet HEAD` to record the full baseline commit hash.
+If HEAD does not resolve, run `git status --short --branch`.
+Continue without a parent only when status identifies a repository without commits.
+Stop on other errors.
 
-- If it lists no staged path, run `git status --short`. Return **Empty stage** and stop.
-- Otherwise, retain the stat output for the result.
-
-Complete this step only when the stat identifies at least one staged path.
-
-### 2. Account for the snapshot
-
-Run:
+Record these outputs:
 
 ```bash
-git diff --cached
-git log -10 --format=%s
+git diff --cached --raw --no-abbrev --no-renames
+git diff --cached --stat
+git diff --cached --no-ext-diff --no-textconv
 ```
 
-Retain the staged diff as the analyzed snapshot. Read
-[commit message conventions](references/commit-conventions.md) before you choose the message.
-Choose one message that:
+The raw diff records paths, file modes, and complete object IDs, including binary content and submodule commits.
+Retain its complete output for exact comparisons.
+If the raw diff is empty, report **Empty staging** and stop.
+Read the complete patch. Retain the stat for the final report.
 
-- accounts for every staged hunk
-- follows Conventional Commits and the reference
-- matches the recent repository's language and scope style
-- uses a body only when the title cannot cover every significant change.
+Read HEAD and the raw diff again with the same commands.
+If either differs from its recorded value, report **State changed** and stop.
 
-Complete this step only when every staged hunk maps to the title, body, or
-footer without unsupported claims.
+Complete this step when you read the complete patch and both baseline comparisons match.
 
-### 3. Revalidate the snapshot
+### 2. Choose one message
 
-Run `git diff --cached` again.
-Compare its complete output byte-for-byte with the analyzed snapshot.
+Read `git log -10 --format=%s` when the repository contains commits.
+Read [commit message conventions](references/commit-conventions.md) before choosing the message.
+Apply repository instructions before recent message conventions.
 
-- **Identical:** continue.
-- **Changed:** replace the analyzed snapshot and repeat step 2.
-- **Empty:** Run `git status --short`. Return **Empty stage** and stop.
+Complete this step when one message describes the significant staged changes without unsupported claims.
 
-Complete this step only when the current staged diff is identical to the diff
-used to choose the message.
+### 3. Check the baseline before committing
 
-### 4. Commit and verify
+Read HEAD and the raw diff again with the same commands from step 1.
+Compare each complete output with its recorded baseline.
+If HEAD or staged content differs, report **State changed** and stop.
+This includes staging that becomes empty. Keep the original baseline instead of analyzing the new state.
 
-Pass the chosen title and optional body as separate, exactly shell-escaped
-`git commit -m` arguments:
+Complete this step only when both comparisons match.
+
+### 4. Commit once and check the result
+
+Pass each message paragraph as a separate, exactly shell-escaped `-m` argument.
+Choose one command form:
 
 ```bash
 git commit -m "type(scope): subject"
 git commit -m "type(scope): subject" -m "body"
 ```
 
-If the commit fails, return the command error and make no success claim.
+Pass a footer as an additional `-m` argument when required.
+If the commit fails, report the command error and `git status --short`.
+Stop without retrying or claiming success.
 
-On success, run `git log -1 --format='%h %s'`. Return **Result** only when the
-displayed subject exactly matches the chosen title.
+Identify the created commit from the successful command output, not from an unverified later HEAD.
+Use that commit's hash in these commands:
 
-## Empty stage
-
-```text
-The stage is empty.
-
-[git status --short result]
-
-Stage the changes to commit first:
-  git add <file>  # Stage a specific file
-  git add -p      # Select changes interactively
+```bash
+git show -s --format='%H%n%P%n%s' <created-hash>
+git diff-tree --root --no-commit-id -r --raw --no-abbrev --no-renames <created-hash>
 ```
 
-## Result
+Check all these conditions:
 
-````text
-Analyzed changes:
-[git diff --cached --stat result and summary of all staged changes]
+- The parent list contains exactly the baseline HEAD, or is empty for a repository without prior commits.
+- The complete raw diff exactly matches the recorded raw diff.
+- The subject exactly matches the chosen title.
+- The current HEAD resolves to the created commit's full hash.
 
-Commit message:
-```
-[Executed commit message]
-```
+Read `git status --short` to report the observed remaining state.
+If any check fails, report **Commit mismatch** and stop.
+Include the created hash, failed comparisons, and observed status. Leave the commit in place.
+If inspection fails, report the error and known commit hash without claiming success.
 
-Commit result:
-`[git log -1 result]`
-````
+Complete this step only when all four checks pass.
+
+## Reports
+
+### Empty staging
+
+Report that no changes are staged.
+Include `git status --short` and instructions to stage the intended changes before invoking the skill again.
+
+### State changed
+
+Report which baseline changed and the observed difference.
+Include `git status --short`.
+Create no commit. Leave the new state untouched.
+
+### Result
+
+Report the analyzed stat and a concise summary of significant changes.
+Include the executed message, created hash, and checked subject.
+State that content and parent checks passed.
+Include the observed remaining status. Do not claim that hooks left files or staging unchanged.
