@@ -1,11 +1,11 @@
 ---
 name: auto-commit
-description: "Use when asked to commit changes or split changes into commits. Commit current-session changes immediately. Include the entire working tree only when explicitly requested."
+description: "Use when asked to commit changes or split changes into commits."
 ---
 
 # Auto Commit
 
-Commit changes made in the current session. Invocation authorizes immediate commits within that scope, not other sessions' changes.
+Invocation authorizes immediate commits within the scope selected below.
 
 ## Procedure
 
@@ -18,14 +18,23 @@ git status --short --untracked-files=all
 git diff --cached --name-status
 ```
 
-- Use the session's edit history and recorded before-and-after content to identify its changes.
-- An explicit user scope takes precedence. Include all sessions' changes only when the user explicitly requests the entire working tree.
-- A filename, directory, timestamp, or staged state does not establish which session made a change.
+Select scope in this order:
+
+1. Apply the user's explicit scope. An unqualified request to commit all changes selects the entire working tree, including other sessions' changes. A qualifier such as "all changes in this session" keeps that narrower scope.
+2. Without an explicit scope, stop if edit history was lost or is incomplete, or whether the session made edits is uncertain. Report the missing evidence. Do not infer a no-edit session from absent records or expand scope automatically.
+3. Otherwise, select current-session changes when the session has made edits. Identify them from the session's edit history and recorded before-and-after content.
+4. Otherwise, select the entire working tree when the session has made no edits. Read-only inspection or discussion does not count as editing.
+
+The entire working tree includes staged, unstaged, and untracked changes reported by Git. Selecting it requires no evidence of which session made each change.
+For session-scoped changes, a filename, directory, timestamp, or staged state does not establish ownership. Stop if the selected session's changes cannot be identified.
+
+Briefly announce the selected scope and its basis, then proceed without requesting approval.
+
 - Read candidate patches once with `git diff -- <paths>` and `git diff --cached -- <paths>`.
 - Inspect untracked content only when it is within the authorized scope.
 - Distinguish authorized staged changes from authorized unstaged changes. Preserve excluded changes and their staged state.
 - For shared files, read [shared-state handling](references/shared-state.md) before selecting changes.
-- If ownership or separation is uncertain, stop before creating commits. Report the affected paths and missing evidence.
+- If separation is uncertain, stop before creating commits. Report the affected paths and missing evidence.
 - If there are no changes, report a clean working tree and stop.
 - If there are no authorized changes, report that result. Leave other changes untouched.
 

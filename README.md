@@ -20,7 +20,7 @@ npx skills@latest add divlook/skills
   - [When and how to use API Radar](docs/skills/api-radar.md)
 - [`gen-pr`](skills/gen-pr): Generates an evidence-backed pull request title and body from a branch diff, and optionally creates the pull request.
   - [When and how to use Gen PR](docs/skills/gen-pr.md)
-- [`auto-commit`](skills/auto-commit): Commits current-session changes in logical groups while preserving other sessions' changes and staging.
+- [`auto-commit`](skills/auto-commit): Commits session edits or, in a no-edit session, the entire working tree in logical groups; explicit scope takes precedence.
   - [When and how to use Auto Commit](docs/skills/auto-commit.md)
 - [`stage-to-commit`](skills/stage-to-commit): Analyzes the staged snapshot, chooses a Conventional Commit message, and creates one commit.
   - [When and how to use Stage to Commit](docs/skills/stage-to-commit.md)
