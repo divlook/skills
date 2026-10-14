@@ -5,7 +5,7 @@ The real index is the repository's existing staging area. A temporary index sele
 
 ## Select the changes
 
-Use recorded edits to separate the group's changes from excluded changes.
+Use the authorized scope and inspected patches to separate the group's changes from excluded changes. For session-scoped selections, use recorded edits to establish ownership too.
 Record two selections:
 
 - The group's complete patch against HEAD, including its staged and unstaged changes.
